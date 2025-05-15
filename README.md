@@ -1,6 +1,6 @@
 # 🍳 Recipe Finder 
 
-https://yochna.github.io/recipe-finder/[live demo]
+https://yochna.github.io/recipe-finder/ 
 
 A beautiful recipe search app using the Spoonacular API.
 
