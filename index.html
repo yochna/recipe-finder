@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Culinary Compass | Find Perfect Recipes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+   <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+
+        <section class="hero">
+            <h1>Discover Culinary Magic</h1>
+            <p>Find perfect recipes for every occasion, diet, and taste</p>
+        </section>
+
+
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="What's cooking today? (e.g., pasta, chicken, vegan)">
+                <button id="search-btn"><i class="fas fa-search"></i> Find Recipes</button>
+            </div>
+            <div class="filters">
+                <select id="cuisine">
+                    <option value="">All Cuisines</option>
+                    <option value="italian">Italian</option>
+                    <option value="mexican">Mexican</option>
+                    <option value="indian">Indian</option>
+                    <option value="chinese">Chinese</option>
+                    <option value="mediterranean">Mediterranean</option>
+                    <option value="japanese">Japanese</option>
+                    <option value="thai">Thai</option>
+                    <option value="french">French</option>
+                </select>
+                <select id="diet">
+                    <option value="">All Diets</option>
+                    <option value="vegetarian">Vegetarian</option>
+                    <option value="vegan">Vegan</option>
+                    <option value="gluten-free">Gluten-Free</option>
+                    <option value="keto">Keto</option>
+                    <option value="paleo">Paleo</option>
+                    <option value="low-carb">Low-Carb</option>
+                    <option value="dairy-free">Dairy-Free</option>
+                </select>
+                <select id="meal-type">
+                    <option value="">All Meals</option>
+                    <option value="main course">Main Course</option>
+                    <option value="dessert">Dessert</option>
+                    <option value="breakfast">Breakfast</option>
+                    <option value="salad">Salad</option>
+                    <option value="soup">Soup</option>
+                    <option value="appetizer">Appetizer</option>
+                    <option value="snack">Snack</option>
+                </select>
+            </div>
+        </div>
+
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Searching our culinary database...</p>
+        </div>
+
+
+        <div id="error-message" class="error-message"></div>
+
+
+        <div id="recipes-container" class="recipes-grid">
+            <div class="empty-state">
+                <i class="fas fa-utensils"></i>
+                <h3>Ready to Cook Something Amazing?</h3>
+                <p>Search for recipes by ingredients, cuisine, or dietary needs</p>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="fab">
+        <i class="fas fa-search"></i>
+    </div>
+   <script src="script.js"></script>
+</body>
+
+</html>
