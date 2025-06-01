@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMaster - Your Smart To-Do List</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">TaskMaster</h1>
+                <p class="app-subtitle">Organize your work and life</p>
+            </div>
+            <div class="user-controls">
+                <button id="googleLoginBtn" class="auth-btn">
+                    <i class="fab fa-google"></i> Sign in
+                </button>
+                <button id="logoutBtn" class="auth-btn" style="display: none;">
+                    <i class="fas fa-sign-out-alt"></i> Sign out
+                </button>
+            </div>
+        </header>
+
+        <main class="app-content" style="display: none;">
+            <section class="task-input-section">
+                <div class="input-group">
+                    <input type="text" id="taskInput" placeholder="What needs to be done?" autofocus>
+                    <div class="input-options">
+                        <input type="date" id="dueDate">
+                        <select id="prioritySelect">
+                            <option value="low">Low Priority</option>
+                            <option value="medium" selected>Medium Priority</option>
+                            <option value="high">High Priority</option>
+                        </select>
+                        <button id="addTaskBtn" class="primary-btn">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="task-stats">
+                <div class="stats-display">
+                    <span id="taskCounter">0 tasks</span>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button id="sortTasksBtn" class="secondary-btn">
+                        <i class="fas fa-sort"></i> Sort by Priority
+                    </button>
+                    <button id="clearCompletedBtn" class="secondary-btn">
+                        <i class="fas fa-trash"></i> Clear Completed
+                    </button>
+                </div>
+            </section>
+
+            <section class="task-list-section">
+                <ul id="taskList"></ul>
+            </section>
+        </main>
+
+        <div class="toast-notification" id="toast"></div>
+        <div class="connection-status" id="connectionStatus"></div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
