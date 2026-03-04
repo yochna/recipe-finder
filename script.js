@@ -1,5 +1,5 @@
-const BASE_URL = "http://localhost:5000/recipeProxy";
-const FAV_URL = "http://localhost:5000/favorites";
+const BASE_URL = "https://recipe-finder-production-c144.up.railway.app/recipeProxy";
+const FAV_URL = "https://recipe-finder-production-c144.up.railway.app/favorites";
 
 const searchBtn = document.getElementById("search-btn");
 const searchInput = document.getElementById("search-input");
