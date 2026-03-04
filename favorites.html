@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ My Favorites | Culinary Compass</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <section class="hero">
+            <h1>My Favorite Recipes</h1>
+            <p>All your saved recipes in one place</p>
+            <a href="index.html" class="back-btn"><i class="fas fa-arrow-left"></i> Back to Search</a>
+        </section>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading your favorites...</p>
+        </div>
+
+        <div id="error-message" class="error-message"></div>
+
+        <div id="favorites-container" class="recipes-grid">
+            <div class="empty-state">
+                <i class="fas fa-heart"></i>
+                <h3>No Favorites Yet</h3>
+                <p>Go back and click the ❤️ on any recipe to save it here</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const FAV_URL = "http://localhost:5000/favorites";
+        const container = document.getElementById("favorites-container");
+        const loading = document.getElementById("loading");
+        const errorEl = document.getElementById("error-message");
+
+        async function loadFavorites() {
+            loading.style.display = "flex";
+            try {
+                const res = await fetch(FAV_URL);
+                const favorites = await res.json();
+
+                if (!favorites.length) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-heart"></i>
+                            <h3>No Favorites Yet</h3>
+                            <p>Go back and click the ❤️ on any recipe to save it here</p>
+                        </div>`;
+                    return;
+                }
+
+                container.innerHTML = favorites.map(recipe => `
+                    <div class="recipe-card" data-id="${recipe.recipeId}">
+                        <div class="recipe-img-container">
+                            <img src="${recipe.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&h=300'}" 
+                                 alt="${recipe.title}" class="recipe-img">
+                            <button class="favorite-btn active" data-id="${recipe.recipeId}" aria-label="Remove favorite">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        <div class="recipe-info">
+                            <div class="card-header">
+                                <h3>${recipe.title}</h3>
+                            </div>
+                            <div class="recipe-meta">
+                                <span class="meta-item"><i class="fas fa-clock"></i> ${recipe.readyInMinutes || '?'} mins</span>
+                                <span class="meta-item"><i class="fas fa-utensils"></i> Serves ${recipe.servings || '?'}</span>
+                            </div>
+                            <a href="${recipe.sourceUrl || '#'}" target="_blank" class="view-recipe-btn">
+                                <i class="fas fa-book-open"></i> View Recipe
+                            </a>
+                        </div>
+                    </div>`).join('');
+
+            } catch (err) {
+                errorEl.textContent = "Could not load favorites. Is the server running?";
+            } finally {
+                loading.style.display = "none";
+            }
+        }
+
+        // Remove favorite on heart click
+        container.addEventListener("click", async e => {
+            const btn = e.target.closest(".favorite-btn");
+            if (!btn) return;
+
+            const recipeId = btn.dataset.id;
+            await fetch(`${FAV_URL}/${recipeId}`, { method: "DELETE" });
+
+            // Remove card from UI
+            const card = btn.closest(".recipe-card");
+            card.style.transition = "all 0.3s ease";
+            card.style.opacity = "0";
+            card.style.transform = "scale(0.9)";
+            setTimeout(() => {
+                card.remove();
+                // Show empty state if no cards left
+                if (!container.querySelector(".recipe-card")) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-heart"></i>
+                            <h3>No Favorites Yet</h3>
+                            <p>Go back and click the ❤️ on any recipe to save it here</p>
+                        </div>`;
+                }
+            }, 300);
+        });
+
+        loadFavorites();
+    </script>
+</body>
+</html>

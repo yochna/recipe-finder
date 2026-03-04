@@ -16,18 +16,20 @@
     <div class="container">
 
         <section class="hero">
-            <h1>Discover Culinary Magic</h1>
+            <h1>Discover Recipes with Culinary Compass</h1>
+
             <p>Find perfect recipes for every occasion, diet, and taste</p>
+            <a href="favorites.html" class="back-btn"><i class="fas fa-heart"></i> My Favorites</a>
         </section>
 
 
         <div class="search-container">
             <div class="search-box">
-                <input type="text" id="search-input" placeholder="What's cooking today? (e.g., pasta, chicken, vegan)">
-                <button id="search-btn"><i class="fas fa-search"></i> Find Recipes</button>
+                <input type="text" id="search-input" placeholder="What's cooking today? (e.g., pasta, chicken, vegan)" aria-label="Search recipes">
+                <button id="search-btn" aria-label="Search recipes"><i class="fas fa-search"></i> Find Recipes</button>
             </div>
             <div class="filters">
-                <select id="cuisine">
+                <select id="cuisine" aria-label="Cuisine filter">
                     <option value="">All Cuisines</option>
                     <option value="italian">Italian</option>
                     <option value="mexican">Mexican</option>
@@ -84,7 +86,7 @@
     <div class="fab">
         <i class="fas fa-search"></i>
     </div>
-   <script src="script.js"></script>
+   <script src="script.js" defer></script>
 </body>
 
 </html>
