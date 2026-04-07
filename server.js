@@ -13,10 +13,17 @@ const MONGO_URI = process.env.MONGO_URI
 
 if (!API_KEY) { console.error("Missing SPOONACULAR_KEY"); process.exit(1) }
 if (!MONGO_URI) { console.error("Missing MONGO_URI"); process.exit(1) }
+
 app.use(cors({
-  origin: ['https://recipe-finder-cyan-eight.vercel.app', 'http://localhost:3000'],
+  origin: [
+    'https://recipe-finder-cyan-eight.vercel.app',
+    'http://localhost:3000',
+    'http://127.0.0.1:5500' 
+  ],
   credentials: true
-}))
+}));
+
+app.options('*', cors());
 app.use(express.json())
 
 mongoose.connect(MONGO_URI)
