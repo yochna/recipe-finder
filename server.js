@@ -14,16 +14,23 @@ const MONGO_URI = process.env.MONGO_URI
 if (!API_KEY) { console.error("Missing SPOONACULAR_KEY"); process.exit(1) }
 if (!MONGO_URI) { console.error("Missing MONGO_URI"); process.exit(1) }
 
+const cors = require('cors');
+
+
 app.use(cors({
-  origin: [
-    'https://recipe-finder-cyan-eight.vercel.app',
-    'http://localhost:3000',
-    'http://127.0.0.1:5500' 
-  ],
+  origin: 'https://recipe-finder-cyan-eight.vercel.app',
   credentials: true
 }));
 
-app.options('*', cors());
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Origin', 'https://recipe-finder-cyan-eight.vercel.app');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    return res.sendStatus(200);
+  }
+  next();
+});
 app.use(express.json())
 
 mongoose.connect(MONGO_URI)
