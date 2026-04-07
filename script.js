@@ -1,5 +1,5 @@
-const BASE_URL = "https://recipe-finder-production-c144.up.railway.app/recipeProxy";
-const FAV_URL = "https://recipe-finder-production-c144.up.railway.app/favorites";
+const BASE_URL = "https://recipe-finder-dmw7.onrender.com/recipeProxy";
+const FAV_URL = "https://recipe-finder-dmw7.onrender.com/favorites";
 
 const searchBtn = document.getElementById("search-btn");
 const searchInput = document.getElementById("search-input");
