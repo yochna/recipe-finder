@@ -7,13 +7,16 @@ const mongoose = require("mongoose")
 const { URL } = require("url")
 
 const app = express()
-const PORT = 5000
+const PORT = process.env.PORT || 5000
 const API_KEY = process.env.SPOONACULAR_KEY
 const MONGO_URI = process.env.MONGO_URI
 
 if (!API_KEY) { console.error("Missing SPOONACULAR_KEY"); process.exit(1) }
 if (!MONGO_URI) { console.error("Missing MONGO_URI"); process.exit(1) }
-app.use(cors())
+app.use(cors({
+  origin: ['https://recipe-finder-cyan-eight.vercel.app', 'http://localhost:3000'],
+  credentials: true
+}))
 app.use(express.json())
 
 mongoose.connect(MONGO_URI)
@@ -70,7 +73,7 @@ app.post("/favorites",async(req,res)=>{
 })
 app.delete("/favorites/:id",async(req,res)=>{
   await Favorite.findOneAndDelete({recipeId:Number(req.params.id)})
-  res.json({sucess:true})
+ res.json({ success: true })
 })
 
 app.listen(PORT, () => console.log(`Local proxy running on http://localhost:${PORT}`))
