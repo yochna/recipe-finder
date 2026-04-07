@@ -14,7 +14,6 @@ const MONGO_URI = process.env.MONGO_URI
 if (!API_KEY) { console.error("Missing SPOONACULAR_KEY"); process.exit(1) }
 if (!MONGO_URI) { console.error("Missing MONGO_URI"); process.exit(1) }
 
-const cors = require('cors');
 
 
 app.use(cors({
