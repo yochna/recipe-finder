@@ -17,19 +17,14 @@ if (!MONGO_URI) { console.error("Missing MONGO_URI"); process.exit(1) }
 
 
 app.use(cors({
-  origin: 'https://recipe-finder-cyan-eight.vercel.app',
-  credentials: true
+  origin: [
+    'https://recipe-finder-cyan-eight.vercel.app', 
+    'http://localhost:3000' // Useful for local testing
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
-app.use((req, res, next) => {
-  if (req.method === 'OPTIONS') {
-    res.header('Access-Control-Allow-Origin', 'https://recipe-finder-cyan-eight.vercel.app');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    return res.sendStatus(200);
-  }
-  next();
-});
 app.use(express.json())
 
 mongoose.connect(MONGO_URI)
