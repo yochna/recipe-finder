@@ -1,0 +1,187 @@
+.ai-chef { min-height: calc(100vh - 68px); }
+
+.ai-chef__layout {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  min-height: calc(100vh - 68px);
+}
+
+/* Left */
+.ai-chef__left {
+  padding: 48px 40px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  background: var(--cream);
+}
+
+.ai-chef__photo-wrap {
+  width: 100%;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  border-radius: var(--radius);
+  margin-bottom: 8px;
+}
+.ai-chef__photo { width: 100%; height: 100%; object-fit: cover; }
+
+.ai-chef__eyebrow { margin-bottom: -4px; }
+
+.ai-chef__name {
+  font-family: var(--font-display);
+  font-size: 44px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.1;
+}
+
+.ai-chef__desc { font-size: 15px; color: var(--muted); line-height: 1.65; }
+
+.ai-chef__try { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+
+.ai-chef__try-label { margin-bottom: 2px; }
+
+.ai-chef__suggestion {
+  text-align: left;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--muted);
+  font-family: var(--font-display);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border2);
+  transition: color 0.2s;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+}
+.ai-chef__suggestion:hover { color: var(--rust); }
+
+/* Chat */
+.ai-chef__chat {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+
+.ai-chef__messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 400px;
+  max-height: calc(100vh - 68px - 80px);
+}
+
+.ai-chef__msg {
+  display: flex;
+  gap: 12px;
+  animation: fadeUp 0.3s ease both;
+}
+
+.ai-chef__msg--user {
+  flex-direction: row-reverse;
+}
+
+.ai-chef__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+.ai-chef__avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.ai-chef__bubble {
+  max-width: 70%;
+  padding: 14px 18px;
+  border-radius: 2px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+
+.ai-chef__msg--assistant .ai-chef__bubble {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-top-left-radius: 0;
+}
+
+.ai-chef__msg--user .ai-chef__bubble {
+  background: var(--rust);
+  color: #fff;
+  border-top-right-radius: 0;
+}
+
+.ai-chef__bubble p + p { margin-top: 6px; }
+
+/* Typing indicator */
+.ai-chef__bubble--typing {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 16px 20px;
+}
+.ai-chef__bubble--typing span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dim);
+  animation: typing 1s infinite ease-in-out;
+}
+.ai-chef__bubble--typing span:nth-child(2) { animation-delay: 0.18s; }
+.ai-chef__bubble--typing span:nth-child(3) { animation-delay: 0.36s; }
+
+@keyframes typing {
+  0%, 80%, 100% { transform: scale(1); opacity: 0.5; }
+  40%           { transform: scale(1.25); opacity: 1; }
+}
+
+/* Input */
+.ai-chef__input-area {
+  display: flex;
+  align-items: center;
+  padding: 20px 40px;
+  border-top: 1px solid var(--border);
+  background: var(--cream);
+  gap: 12px;
+}
+
+.ai-chef__input {
+  flex: 1;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  padding: 10px 0;
+  font-size: 15px;
+  color: var(--ink);
+}
+.ai-chef__input::placeholder { color: var(--dim); font-style: italic; }
+.ai-chef__input:focus { border-bottom-color: var(--rust); outline: none; }
+
+.ai-chef__send {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  background: var(--rust);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-radius: var(--radius);
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.ai-chef__send:hover:not(:disabled) { background: var(--rust-dark); }
+.ai-chef__send:disabled { opacity: 0.5; cursor: not-allowed; }
+
+@media (max-width: 900px) {
+  .ai-chef__layout { grid-template-columns: 1fr; }
+  .ai-chef__left { border-right: none; border-bottom: 1px solid var(--border); }
+  .ai-chef__messages { max-height: 400px; }
+}
