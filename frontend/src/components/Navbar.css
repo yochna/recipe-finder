@@ -1,0 +1,100 @@
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  height: 68px;
+  background: var(--cream);
+  border-bottom: 1px solid var(--border);
+  transition: box-shadow 0.3s;
+}
+.navbar.scrolled { box-shadow: var(--shadow-sm); }
+
+/* Brand */
+.navbar__brand { display:flex; align-items:baseline; gap:5px; }
+.navbar__brand-serif {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+}
+.navbar__brand-script {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--rust);
+}
+
+/* Nav */
+.navbar__nav { display:flex; align-items:center; gap:2px; }
+
+.navbar__link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-radius: var(--radius);
+  transition: color 0.2s;
+}
+.navbar__link:hover { color: var(--ink); }
+.navbar__link.active { color: var(--rust); }
+.navbar__link--ai.active { color: var(--rust); }
+
+.navbar__link-icon { font-size: 11px; }
+
+.navbar__fav-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 10px;
+  background: var(--rust);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* Actions */
+.navbar__actions { display:flex; align-items:center; gap:10px; }
+
+.navbar__btn {
+  padding: 8px 18px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  border-radius: var(--radius);
+  transition: all 0.2s;
+}
+.navbar__btn--ghost {
+  color: var(--ink);
+  border: 1px solid var(--border);
+  background: transparent;
+}
+.navbar__btn--ghost:hover { background: var(--surface); }
+
+.navbar__btn--solid {
+  background: var(--rust);
+  color: #fff;
+  border: 1px solid var(--rust);
+}
+.navbar__btn--solid:hover { background: var(--rust-dark); }
+
+@media (max-width: 768px) {
+  .navbar { padding: 0 16px; }
+  .navbar__link span:not(.navbar__fav-count) { display:none; }
+  .navbar__link { padding: 8px 10px; }
+  .navbar__btn--ghost { display:none; }
+}
