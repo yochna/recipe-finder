@@ -1,54 +1,84 @@
-# 🧭 Culinary Compass
+# 🍳 Saffron & Stove — Recipe Finder
 
-A full-stack recipe finder app built with **React**, **Tailwind-inspired CSS**, **Node.js**, **Express**, and **MongoDB**.
+A full-stack recipe discovery app built with the MERN stack, featuring AI-powered recipe suggestions, cook mode with timers, and a shopping list exporter.
 
----
+## 🌐 Live Demo
+- Frontend: [recipe-finder-cyan-eight.vercel.app](https://recipe-finder-cyan-eight.vercel.app)
 
-## Project Structure
+## ✨ Features
 
-```
+- 🔍 **Recipe Search** — Search by ingredient, cuisine, diet, or dish type via Spoonacular API
+- 🤖 **AI Chef (Chef Olive)** — Chat with an AI sous-chef powered by Groq (LLaMA 3.3 70B) for personalized recipe suggestions
+- 👨‍🍳 **Cook Mode** — Full-screen step-by-step cooking view with built-in countdown timers per step
+- ❤️ **Favorites** — Save and manage your favourite recipes (per-user, stored in MongoDB)
+- 🛒 **Shopping List** — Add recipes to a shopping list, check off ingredients, copy or print/export as PDF
+- 🔐 **Authentication** — JWT-based auth with httpOnly secure cookies, register/login/logout
+- 📧 **Forgot Password** — Email-based password reset via Gmail SMTP (Nodemailer)
+- 🖼️ **Image Proxy** — Backend proxy for Spoonacular images to avoid CORS issues
+
+## 🛠️ Tech Stack
+
+### Frontend
+- React 18
+- React Router v6
+- Context API (Auth, Favorites, Shopping List)
+- CSS Modules (custom design system)
+
+### Backend
+- Node.js + Express
+- MongoDB + Mongoose
+- JWT + httpOnly Cookies
+- Nodemailer (Gmail SMTP)
+- Spoonacular API
+- Groq API (LLaMA 3.3 70B)
+
+## 📁 Project Structure
 recipe-finder/
-├── backend/          ← Express + MongoDB API
-│   ├── server.js
-│   ├── package.json
-│   └── .env.example
-└── frontend/         ← React app
-    ├── public/
-    └── src/
-        ├── api.js
-        ├── App.js
-        ├── context/FavoritesContext.js
-        ├── components/
-        │   ├── Navbar.js / .css
-        │   ├── RecipeCard.js / .css
-        │   └── SearchBar.js / .css
-        └── pages/
-            ├── Home.js / .css
-            └── Favorites.js / .css
-```
+├── backend/
+│   ├── server.js          # Express server, all API routes
+│   ├── .env               # Environment variables (not committed)
+│   └── package.json
+└── frontend/
+├── src/
+│   ├── components/    # Navbar, RecipeCard, AuthModal
+│   ├── context/       # AuthContext, FavoritesContext, ShoppingListContext
+│   ├── pages/         # Home, Search, AiChef, Favorites, CookMode, ShoppingList, ResetPassword
+│   └── api.js         # Frontend API helpers
+└── package.json
 
----
+## 🚀 Getting Started
 
-## Getting Started
+### Prerequisites
+- Node.js 18+
+- MongoDB Atlas account
+- Spoonacular API key
+- Groq API key
+- Gmail account with App Password
 
-### 1. Backend Setup
+### Backend Setup
 
 ```bash
 cd backend
 npm install
-cp .env.example .env
-# Fill in your credentials in .env
-npm run dev       # or: npm start
 ```
 
-**Required `.env` values:**
-| Key               | Description                              |
-|-------------------|------------------------------------------|
-| `PORT`            | Server port (default: 5000)              |
-| `SPOONACULAR_KEY` | API key from spoonacular.com (free tier) |
-| `MONGO_URI`       | MongoDB connection string (Atlas or local)|
+Create a `.env` file in the `backend` folder:
 
-### 2. Frontend Setup
+```env
+PORT=5000
+MONGO_URI=your_mongodb_atlas_uri
+SPOONACULAR_KEY=your_spoonacular_api_key
+GROQ_KEY=your_groq_api_key
+JWT_SECRET=your_jwt_secret
+GMAIL_USER=your_gmail@gmail.com
+GMAIL_PASS=your_16char_app_password
+```
+
+```bash
+node server.js
+```
+
+### Frontend Setup
 
 ```bash
 cd frontend
@@ -56,31 +86,28 @@ npm install
 npm start
 ```
 
-The React app runs on `http://localhost:3000` and proxies `/api/*` to `http://localhost:5000`.
+App runs at `http://localhost:3000`
 
----
+## 🔑 Environment Variables
 
-## API Endpoints
+| Variable | Description |
+|----------|-------------|
+| `MONGO_URI` | MongoDB Atlas connection string |
+| `SPOONACULAR_KEY` | [Spoonacular API](https://spoonacular.com/food-api) key |
+| `GROQ_KEY` | [Groq API](https://groq.com) key |
+| `JWT_SECRET` | Any random secret string |
+| `GMAIL_USER` | Gmail address for sending emails |
+| `GMAIL_PASS` | Gmail App Password (16 characters, no spaces) |
 
-| Method | Endpoint              | Description                          |
-|--------|-----------------------|--------------------------------------|
-| GET    | `/api/recipes`        | Search recipes (proxies Spoonacular) |
-| GET    | `/api/favorites`      | Get all saved favorites              |
-| POST   | `/api/favorites`      | Save a recipe                        |
-| DELETE | `/api/favorites/:id`  | Remove a saved recipe                |
+## 📸 Screenshots
 
-### Query params for `/api/recipes`
-- `query` (required) — search term
-- `cuisine` — e.g. italian, mexican
-- `diet` — e.g. vegetarian, vegan, keto
-- `type` — e.g. main course, dessert, soup
-- `number` — results count (max 20)
+> Home page, Search, AI Chef, Cook Mode, Favorites, Shopping List
 
----
+## 👩‍💻 Developer
 
-## Features
-- 🔍 Live recipe search with cuisine / diet / meal filters
-- ❤️ Save & remove favorites (stored in MongoDB)
-- 🌙 Dark editorial design with smooth animations
-- 📱 Responsive for mobile & desktop
-- ⚡ Debounced search, loading skeletons, error states
+**B. Yochna Rao** — Full Stack Developer  
+📧 raoyochna07@gmail.com  
+🔗 [GitHub](https://github.com/yochna) · [LinkedIn](https://linkedin.com/in/b-yochna-rao-6ab964285)
+
+## 📄 License
+MIT
