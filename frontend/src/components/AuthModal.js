@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import './AuthModal.css';
 
+const BASE_URL = process.env.REACT_APP_API_URL
+  ? process.env.REACT_APP_API_URL.replace('/api', '')
+  : '';
+
 export default function AuthModal({ mode: initialMode = 'login', onClose }) {
   const { login } = useAuth();
   const [mode, setMode] = useState(initialMode);
@@ -36,7 +40,9 @@ export default function AuthModal({ mode: initialMode = 'login', onClose }) {
     e.preventDefault();
     setLoading(true);
     setError('');
-    const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
+    const endpoint = mode === 'login'
+      ? `${BASE_URL}/api/auth/login`
+      : `${BASE_URL}/api/auth/register`;
     const body = mode === 'login'
       ? { email: form.email, password: form.password }
       : { name: form.name, email: form.email, password: form.password };
@@ -47,7 +53,8 @@ export default function AuthModal({ mode: initialMode = 'login', onClose }) {
         credentials: 'include',
         body: JSON.stringify(body),
       });
-      const data = await res.json();
+      const text = await res.text();
+      const data = text ? JSON.parse(text) : {};
       if (!res.ok) throw new Error(data.error || 'Something went wrong');
       login(data.user);
       onClose();
@@ -62,7 +69,7 @@ export default function AuthModal({ mode: initialMode = 'login', onClose }) {
     e.preventDefault();
     setForgotLoading(true);
     try {
-      await fetch('/api/auth/forgot-password', {
+      await fetch(`${BASE_URL}/api/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: forgotEmail }),

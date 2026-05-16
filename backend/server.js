@@ -29,9 +29,9 @@ if (!GROQ_KEY)  { console.error("❌ Missing GROQ_KEY in .env");         process
 app.use(cors({
   origin: function(origin, callback) {
    
-    if (!origin || origin.startsWith('http://localhost')) {
-      callback(null, true);
-    } else {
+  if (!origin || origin.startsWith('http://localhost') || origin === 'https://recipe-finder-nu-seven.vercel.app') {
+  callback(null, true);
+}else {
       callback(new Error("Not allowed by CORS"));
     }
   },

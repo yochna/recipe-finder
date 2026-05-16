@@ -3,7 +3,8 @@
 > A production-grade, full-stack recipe discovery platform built with the MERN stack — featuring AI-powered suggestions, offline support, and a focus on real-world engineering practices.
 
 ## 🌐 Live Demo
-**Frontend:** [recipe-finder-cyan-eight.vercel.app](https://recipe-finder-cyan-eight.vercel.app)
+**Frontend:** [
+recipe-finder-nu-seven.vercel.app]
 
 ---
 
