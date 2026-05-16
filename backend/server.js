@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const rateLimit = require('express-rate-limit');
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const { URL } = require("url");
@@ -20,18 +21,62 @@ const JWT_SECRET = process.env.JWT_SECRET || "saffron-stove-secret-key";
 const GMAIL_USER = process.env.GMAIL_USER;
 const GMAIL_PASS = process.env.GMAIL_PASS;
 
+
 if (!API_KEY)   { console.error("❌ Missing SPOONACULAR_KEY in .env"); process.exit(1); }
 if (!MONGO_URI) { console.error("❌ Missing MONGO_URI in .env");        process.exit(1); }
 if (!GROQ_KEY)  { console.error("❌ Missing GROQ_KEY in .env");         process.exit(1); }
 
 app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:5173"],
+  origin: function(origin, callback) {
+   
+    if (!origin || origin.startsWith('http://localhost')) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
   methods: ["GET", "POST", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
+app.options('*', cors());
 app.use(express.json());
 app.use(cookieParser());
+// ---------- Rate Limiters ----------
+
+// General API limit: 100 requests per 15 minutes per IP
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { error: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Strict limit for auth routes: 10 attempts per 15 minutes per IP
+// Prevents brute-force attacks on login/register
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { error: 'Too many attempts, please try again in 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Search limit: 30 searches per minute per IP
+// Prevents API key abuse on Spoonacular
+const searchLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  message: { error: 'Search limit reached, please slow down.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use('/api/', generalLimiter);           // applies to all routes
+app.use('/api/auth/', authLimiter);         // stricter on login/register
+app.use('/api/recipes', searchLimiter);     // strictest on Spoonacular calls
+
 
 mongoose.connect(MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
@@ -78,7 +123,7 @@ const Favorite = mongoose.model("Favorite", favoriteSchema);
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict',
+  sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 

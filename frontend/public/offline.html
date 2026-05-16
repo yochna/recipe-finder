@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offline — Saffron & Stove</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Georgia, serif;
+      background: #f2ece0;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+    }
+    .emoji { font-size: 4rem; margin-bottom: 1.5rem; }
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      font-style: italic;
+    }
+    p {
+      font-size: 1rem;
+      color: #666;
+      max-width: 360px;
+      line-height: 1.7;
+      margin-bottom: 2rem;
+    }
+    .hint {
+      font-size: 0.85rem;
+      color: #999;
+      border-top: 1px solid #ddd;
+      padding-top: 1.5rem;
+      max-width: 360px;
+    }
+    button {
+      background: #c0392b;
+      color: #fff;
+      border: none;
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 1rem;
+    }
+    button:hover { background: #a93226; }
+  </style>
+</head>
+<body>
+  <div class="emoji">🍳</div>
+  <h1>You're offline.</h1>
+  <p>
+    It looks like you've lost your connection. Your saved favorites
+    are still available — check the Favorites page.
+  </p>
+  <button onclick="window.location.reload()">Try Again</button>
+  <p class="hint">
+    Tip: Pages you've already visited are cached and will load
+    even without an internet connection.
+  </p>
+</body>
+</html>

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import RecipeCard from '../components/RecipeCard';
 import { searchRecipes } from '../api';
 import './Home.css';
@@ -7,30 +8,31 @@ import './Home.css';
 const TICKER_ITEMS = ['Italian','Mexican','Indian','French','Thai','Moroccan','Japanese','Greek','Spanish','Lebanese','Korean','Vietnamese','Turkish','Ethiopian'];
 
 const CATEGORIES = [
-  { name: 'Beef',          img: 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=400&h=320&q=80' },
-{ name: 'Chicken', img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=400&h=320&q=80' },  { name: 'Dessert',       img: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=400&h=320&q=80' },
-  { name: 'Lamb',          img: 'https://images.unsplash.com/photo-1603048588665-791ca8aea617?auto=format&fit=crop&w=400&h=320&q=80' },
-  { name: 'Pasta',         img: 'https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?auto=format&fit=crop&w=400&h=320&q=80' },
-  { name: 'Seafood',       img: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=400&h=320&q=80' },
-  { name: 'Vegetarian',    img: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=400&h=320&q=80' },
-  { name: 'Breakfast',     img: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&w=400&h=320&q=80' },
+  { name: 'Beef',       img: 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=400&h=320&q=80' },
+  { name: 'Chicken',    img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=400&h=320&q=80' },
+  { name: 'Dessert',    img: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=400&h=320&q=80' },
+  { name: 'Lamb',       img: 'https://images.unsplash.com/photo-1603048588665-791ca8aea617?auto=format&fit=crop&w=400&h=320&q=80' },
+  { name: 'Pasta',      img: 'https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?auto=format&fit=crop&w=400&h=320&q=80' },
+  { name: 'Seafood',    img: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=400&h=320&q=80' },
+  { name: 'Vegetarian', img: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=400&h=320&q=80' },
+  { name: 'Breakfast',  img: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&w=400&h=320&q=80' },
 ];
+
+// Pick a random term once per page mount (stable across re-renders)
+const FEATURED_TERMS = ['paella', 'pasta', 'curry', 'steak', 'sushi', 'tacos'];
+const randomTerm = FEATURED_TERMS[Math.floor(Math.random() * FEATURED_TERMS.length)];
 
 export default function Home() {
   const navigate = useNavigate();
   const [heroQuery, setHeroQuery] = useState('');
-  const [featured, setFeatured]   = useState([]);
-  const [loadingFeatured, setLoadingFeatured] = useState(true);
 
-  // Load tonight's tasting menu on mount
-  useEffect(() => {
-    const terms = ['paella', 'pasta', 'curry', 'steak', 'sushi', 'tacos'];
-    const pick = terms[Math.floor(Math.random() * terms.length)];
-    searchRecipes({ query: pick, number: 3 })
-      .then(setFeatured)
-      .catch(console.error)
-      .finally(() => setLoadingFeatured(false));
-  }, []);
+  // ✅ TanStack Query: result is cached by key ['featured', randomTerm]
+  // Coming back to Home? Instant — served from cache, no network trip.
+  const { data: featured = [], isLoading: loadingFeatured } = useQuery({
+    queryKey: ['featured', randomTerm],
+    queryFn: () => searchRecipes({ query: randomTerm, number: 3 }),
+    staleTime: 1000 * 60 * 5, // 5 min — these don't need to refresh often
+  });
 
   const handleHeroSubmit = (e) => {
     e.preventDefault();

@@ -1,19 +1,33 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 
 const Ctx = createContext(null);
 
 export function ShoppingListProvider({ children }) {
+  const { user } = useAuth();
+
   const [items, setItems] = useState(() => {
+    // Only load from localStorage if user is logged in
     try {
       return JSON.parse(localStorage.getItem('shoppingList') || '[]');
     } catch { return []; }
   });
 
+  // Save to localStorage whenever items change
   useEffect(() => {
     localStorage.setItem('shoppingList', JSON.stringify(items));
   }, [items]);
 
+  // Clear list when user logs out
+  useEffect(() => {
+    if (!user) {
+      setItems([]);
+      localStorage.removeItem('shoppingList');
+    }
+  }, [user]);
+
   const addRecipe = async (recipe) => {
+    if (!user) return; // guard: don't allow adding if not signed in
     const id = recipe.id ?? recipe.recipeId;
     if (items.find(i => i.recipeId === id)) return;
     try {
@@ -34,7 +48,10 @@ export function ShoppingListProvider({ children }) {
     setItems(prev => prev.filter(i => i.recipeId !== recipeId));
   };
 
-  const clearList = () => setItems([]);
+  const clearList = () => {
+    setItems([]);
+    localStorage.removeItem('shoppingList');
+  };
 
   const isInList = (id) => items.some(i => i.recipeId === Number(id));
 

@@ -1,10 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useShoppingList } from '../context/ShoppingListContext';
+import { useAuth } from '../context/AuthContext';
+import AuthModal from '../components/AuthModal';
 import './ShoppingList.css';
 
 export default function ShoppingList() {
+  const { user } = useAuth();
   const { items, removeRecipe, clearList } = useShoppingList();
+  const [showModal, setShowModal] = useState(false);
+
+  // ── Not signed in ──
+  if (!user) {
+    return (
+      <main className="shop">
+        <div className="shop__header">
+          <p className="eyebrow">Your Kitchen</p>
+          <h1 className="shop__title">Shopping List</h1>
+          <p className="shop__sub">Sign in to build and save your shopping list.</p>
+        </div>
+        <div className="shop__empty">
+          <p className="eyebrow shop__empty-eyebrow">Sign In Required</p>
+          <h2 className="shop__empty-title">You need an account to use the shopping list.</h2>
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.25rem' }}>
+            <button className="navbar__btn navbar__btn--ghost" onClick={() => setShowModal('login')}>Sign In</button>
+            <button className="navbar__btn navbar__btn--solid" onClick={() => setShowModal('register')}>Create Account</button>
+          </div>
+        </div>
+        {showModal && <AuthModal mode={showModal} onClose={() => setShowModal(false)} />}
+      </main>
+    );
+  }
 
   const allIngredients = items.flatMap(item =>
     (item.ingredients || []).map(ing => ({
@@ -26,6 +52,7 @@ export default function ShoppingList() {
 
   const handlePrint = () => window.print();
 
+  // ── Empty list ──
   if (items.length === 0) {
     return (
       <main className="shop">
@@ -43,6 +70,7 @@ export default function ShoppingList() {
     );
   }
 
+  // ── Has items ──
   return (
     <main className="shop">
       <div className="shop__header">
