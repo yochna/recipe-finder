@@ -160,11 +160,6 @@ This app's state is primarily *server state* — recipe results, favorites, user
 **Why an Express proxy instead of calling Spoonacular directly from React?**
 Any API key embedded in frontend code is visible in the browser's Network tab. The Express proxy keeps the key server-side and also lets us add rate limiting, caching, and error handling in one place.
 
----
-
-## 📸 Screenshots
-
-> Home · Search · AI Chef · Cook Mode · Favorites · Shopping List
 
 ---
 
