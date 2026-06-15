@@ -1,33 +1,49 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-const AuthCtx = createContext(null);
+const AuthContext = createContext(null);
+const BACKEND_URL = 'https://saffron-stove-backend.onrender.com';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Checks if the user is logged in when the app loads
   useEffect(() => {
-    fetch('/api/auth/me', { credentials: 'include' })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data?.user) setUser(data.user); })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    const checkAuth = async () => {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/auth/me`, { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user || data);
+        }
+      } catch (err) {
+        console.error("Auth session check failed:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkAuth();
   }, []);
 
-  const login = (userData) => {
-    setUser(userData);
-  };
-
+  // Handles logging out cleanly
   const logout = async () => {
-   fetch(`${process.env.REACT_APP_API_URL || 'https://saffron-stove-backend.onrender.com/api'}/auth/me`, { credentials: 'include' })
-    setUser(null);
+    try {
+      await fetch(`${BACKEND_URL}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (err) {
+      console.error("Logout request failed:", err);
+    } finally {
+      setUser(null); // Always clear user state locally
+    }
   };
 
   return (
-    <AuthCtx.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, loading, setUser, logout }}>
       {children}
-    </AuthCtx.Provider>
+    </AuthContext.Provider>
   );
 }
 
-export const useAuth = () => useContext(AuthCtx);
+export const useAuth = () => useContext(AuthContext);

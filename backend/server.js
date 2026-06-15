@@ -21,30 +21,40 @@ const JWT_SECRET = process.env.JWT_SECRET || "saffron-stove-secret-key";
 const GMAIL_USER = process.env.GMAIL_USER;
 const GMAIL_PASS = process.env.GMAIL_PASS;
 
-
 if (!API_KEY)   { console.error("❌ Missing SPOONACULAR_KEY in .env"); process.exit(1); }
-if (!MONGO_URI) { console.error("❌ Missing MONGO_URI in .env");        process.exit(1); }
-if (!GROQ_KEY)  { console.error("❌ Missing GROQ_KEY in .env");         process.exit(1); }
+if (!MONGO_URI) { console.error("❌ Missing MONGO_URI in .env");         process.exit(1); }
+if (!GROQ_KEY)  { console.error("❌ Missing GROQ_KEY in .env");          process.exit(1); }
+
+// ---------- Dynamic CORS Configuration ----------
+const allowedOrigins = [
+  'https://recipe-finder-nu-seven.vercel.app', // Your production Vercel frontend
+  'http://localhost:3000',                     // React local development port
+  'http://localhost:5173'                      // Vite local development port
+];
 
 app.use(cors({
-  origin: function(origin, callback) {
-   
-  if (!origin || origin.startsWith('http://localhost') || origin === 'https://recipe-finder-nu-seven.vercel.app') {
-  callback(null, true);
-}else {
-      callback(new Error("Not allowed by CORS"));
+  origin: function (origin, callback) {
+    // Allow server-to-server or tools like Postman (no origin header)
+    if (!origin) return callback(null, true);
+    
+    // Check if the origin matches our allowed list, or matches a local address during development
+    if (allowedOrigins.indexOf(origin) !== -1 || (process.env.NODE_ENV !== 'production' && origin.startsWith('http://localhost'))) {
+      callback(null, true);
+    } else {
+      callback(new Error("Blocked by CORS policy"));
     }
   },
-  credentials: true,
+  credentials: true, // Crucial for passing cookies securely
   methods: ["GET", "POST", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
+
 app.options('*', cors());
 app.use(express.json());
 app.use(cookieParser());
+
 // ---------- Rate Limiters ----------
 
-// General API limit: 100 requests per 15 minutes per IP
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -53,8 +63,6 @@ const generalLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Strict limit for auth routes: 10 attempts per 15 minutes per IP
-// Prevents brute-force attacks on login/register
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -63,8 +71,6 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Search limit: 30 searches per minute per IP
-// Prevents API key abuse on Spoonacular
 const searchLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 30,
@@ -76,7 +82,6 @@ const searchLimiter = rateLimit({
 app.use('/api/', generalLimiter);           // applies to all routes
 app.use('/api/auth/', authLimiter);         // stricter on login/register
 app.use('/api/recipes', searchLimiter);     // strictest on Spoonacular calls
-
 
 mongoose.connect(MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
@@ -119,12 +124,12 @@ favoriteSchema.index({ userId: 1, recipeId: 1 }, { unique: true });
 const Favorite = mongoose.model("Favorite", favoriteSchema);
 
 // ---------- Cookie helper ----------
-
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'none',  // ← change this
-  maxAge: 7 * 24 * 60 * 60 * 1000,
+  // ✅ FIX: sameSite is 'none' only in production with secure: true
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  secure: process.env.NODE_ENV === 'production', 
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
 // ---------- Auth Middleware ----------
@@ -183,7 +188,7 @@ app.get("/api/auth/me", authenticate, (req, res) => {
 });
 
 app.post("/api/auth/logout", (req, res) => {
-  res.clearCookie('token');
+  res.clearCookie('token', cookieOptions); // Added options here to match creation layout
   res.json({ success: true });
 });
 
@@ -191,13 +196,9 @@ app.post("/api/auth/logout", (req, res) => {
 
 app.post("/api/auth/forgot-password", async (req, res) => {
   const { email } = req.body;
-  console.log("📧 Forgot password for:", email);
-  console.log("📧 GMAIL_USER:", GMAIL_USER);
-  console.log("📧 GMAIL_PASS length:", GMAIL_PASS?.length);
   if (!email) return res.status(400).json({ error: "Email is required" });
   try {
     const user = await User.findOne({ email });
-    // Always return success even if email not found (security)
     if (!user) return res.json({ success: true });
 
     const token = crypto.randomBytes(32).toString("hex");
@@ -226,7 +227,6 @@ app.post("/api/auth/forgot-password", async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
-    console.error("Forgot password error:", err.message);
     res.status(500).json({ error: err.message });
   }
 });

@@ -78,10 +78,11 @@ export default function AiChef() {
     // Resolves to your Vercel Environment Variable or falls back directly to your live Render backend URL
     const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://saffron-stove-backend.onrender.com';
 
-    try {
+   try {
       const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', 
         body: JSON.stringify({
           system: SYSTEM_PROMPT,
           messages: [
