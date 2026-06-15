@@ -3,10 +3,6 @@
     {
       "source": "/api/:path*",
       "destination": "https://saffron-stove-backend.onrender.com/api/:path*"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
     }
   ]
 }
