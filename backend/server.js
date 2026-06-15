@@ -123,7 +123,7 @@ const Favorite = mongoose.model("Favorite", favoriteSchema);
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+  sameSite: 'none',  // ← change this
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
@@ -205,7 +205,7 @@ app.post("/api/auth/forgot-password", async (req, res) => {
     user.resetTokenExpiry = Date.now() + 1000 * 60 * 60; // 1 hour
     await user.save();
 
-    const resetUrl = `http://localhost:3000/reset-password?token=${token}`;
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
     await transporter.sendMail({
       from: `"Saffron & Stove" <${GMAIL_USER}>`,

@@ -74,9 +74,10 @@ export default function AiChef() {
     setLoading(true);
     try {
       const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  credentials: 'include',
+  body: JSON.stringify({
           system: SYSTEM_PROMPT,
           messages: [
             ...messages.slice(1).map(m => ({ role: m.role, content: m.text })),
