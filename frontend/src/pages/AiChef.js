@@ -69,15 +69,16 @@ export default function AiChef() {
   const send = async (text) => {
     const msg = text || input.trim();
     if (!msg || loading) return;
+
     setInput('');
     setMessages(prev => [...prev, { role: 'user', text: msg }]);
     setLoading(true);
+
     try {
-    const response = await fetch('https://saffron-stove-backend.onrender.com/api/chat', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  credentials: 'include',
-  body: JSON.stringify({
+      const response = await fetch('https://saffron-stove-backend.onrender.com/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           system: SYSTEM_PROMPT,
           messages: [
             ...messages.slice(1).map(m => ({ role: m.role, content: m.text })),
@@ -85,12 +86,22 @@ export default function AiChef() {
           ],
         }),
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || `Server returned status code ${response.status}`);
+      }
+
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || `Server error ${response.status}`);
       const reply = data.content?.[0]?.text || "Sorry, I couldn't think of anything right now!";
       setMessages(prev => [...prev, { role: 'assistant', text: reply }]);
+
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'assistant', text: err.message || "My kitchen wifi is acting up — try again in a moment!" }]);
+      console.error("Chat Execution Error:", err);
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        text: err.message || "My kitchen wifi is acting up — try again in a moment!" 
+      }]);
     } finally {
       setLoading(false);
     }
