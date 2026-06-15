@@ -73,7 +73,7 @@ export default function AiChef() {
     setMessages(prev => [...prev, { role: 'user', text: msg }]);
     setLoading(true);
     try {
-      const response = await fetch('/api/chat', {
+     const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://saffron-stove-backend.onrender.com/api'}/chat`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   credentials: 'include',

@@ -19,7 +19,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+   fetch(`${process.env.REACT_APP_API_URL || 'https://saffron-stove-backend.onrender.com/api'}/auth/me`, { credentials: 'include' })
     setUser(null);
   };
 
