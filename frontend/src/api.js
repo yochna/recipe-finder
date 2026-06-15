@@ -1,4 +1,5 @@
 const BASE = 'https://saffron-stove-backend.onrender.com/api';
+// Fix favorites deployment route
 
 export async function searchRecipes({ query, cuisine, diet, type, number = 12 }) {
   const params = new URLSearchParams({ query, number });
