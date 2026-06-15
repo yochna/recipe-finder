@@ -1,4 +1,4 @@
-const BASE = process.env.REACT_APP_API_URL || '/api';
+const BASE = 'https://saffron-stove-backend.onrender.com/api';
 
 export async function searchRecipes({ query, cuisine, diet, type, number = 12 }) {
   const params = new URLSearchParams({ query, number });
