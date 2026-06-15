@@ -1,8 +1,8 @@
 {
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "https://saffron-stove-backend.onrender.com/api/$1"
+      "source": "/api/:path*",
+      "destination": "https://saffron-stove-backend.onrender.com/api/:path*"
     }
   ]
 }
