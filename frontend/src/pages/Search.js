@@ -23,7 +23,7 @@ export default function Search() {
   const debouncedCat     = useDebounce(activeCat, 500);
   const debouncedCuisine = useDebounce(activeCuisine, 500);
 
-  const hasQuery = !!(debouncedQuery || debouncedCat || debouncedCuisine);
+  const hasQuery = !!(debouncedQuery.trim() || debouncedCat || debouncedCuisine);
 
   const {
     data: recipes = [],
