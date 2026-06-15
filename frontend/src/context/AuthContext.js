@@ -12,7 +12,7 @@ export function AuthProvider({ children }) {
     return err.response?.data?.message || err.message || "An unexpected error occurred.";
   };
 
-  const login = async (email, password, setError) => {
+ const login = async (email, password, setError) => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
         method: 'POST',
@@ -23,6 +23,7 @@ export function AuthProvider({ children }) {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
+        // Throw a simple string, NOT a function
         throw new Error(data.message || "Login failed");
       }
 
@@ -30,7 +31,13 @@ export function AuthProvider({ children }) {
       setUser(userData);
     } catch (err) {
       console.error(err);
-      setError(getErrorMessage(err)); // Pass string, not function
+      
+      // FIX: Ensure you are passing a string to the state setter
+      // If 'setError' is a function, call it with a string.
+      // Do NOT call the error object itself.
+      if (typeof setError === 'function') {
+        setError(err.message || "Invalid email or password");
+      }
     }
   };
 
