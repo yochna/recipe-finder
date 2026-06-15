@@ -75,8 +75,11 @@ export default function AiChef() {
     setMessages(prev => [...prev, { role: 'user', text: msg }]);
     setLoading(true);
 
+    // Resolves to your Vercel Environment Variable or falls back directly to your live Render backend URL
+    const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://saffron-stove-backend.onrender.com';
+
     try {
-      const response = await fetch('https://saffron-stove-backend.onrender.com/api/chat', {
+      const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
