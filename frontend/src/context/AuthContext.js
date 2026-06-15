@@ -7,40 +7,46 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Checks if the user is logged in when the app loads
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const res = await fetch(`${BACKEND_URL}/api/auth/me`, { credentials: 'include' });
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user || data);
-        }
-      } catch (err) {
-        console.error("Auth session check failed:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    checkAuth();
-  }, []);
+  // Helper to safely handle API errors without crashing
+  const getErrorMessage = (err) => {
+    return err.response?.data?.message || err.message || "An unexpected error occurred.";
+  };
 
-  // Handles logging out cleanly
+  const login = async (email, password, setError) => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include',
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Login failed");
+      }
+
+      const userData = await res.json();
+      setUser(userData);
+    } catch (err) {
+      console.error(err);
+      setError(getErrorMessage(err)); // Pass string, not function
+    }
+  };
+
   const logout = async () => {
     try {
       await fetch(`${BACKEND_URL}/api/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       });
-    } catch (err) {
-      console.error("Logout request failed:", err);
     } finally {
-      setUser(null); // Always clear user state locally
+      setUser(null);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, setUser, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
