@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './CookMode.css';
+import { BACKEND_URL } from '../api';
 
 export default function CookMode() {
   const { id } = useParams();
@@ -16,7 +17,7 @@ export default function CookMode() {
   const intervalRef = useRef(null);
 
   useEffect(() => {
-    fetch(`/api/recipes/${id}/steps`)
+    fetch(`${BACKEND_URL}/api/recipes/${id}/steps`)
       .then(r => r.json())
       .then(data => {
         if (!data.length) setError('No step-by-step instructions available for this recipe.');

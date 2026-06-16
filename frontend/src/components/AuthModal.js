@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { BACKEND_URL } from '../api';
 import './AuthModal.css';
-
-const BASE_URL = process.env.REACT_APP_API_URL
-  ? process.env.REACT_APP_API_URL.replace('/api', '')
-  : '';
 
 export default function AuthModal({ mode: initialMode = 'login', onClose }) {
   const { login } = useAuth();
@@ -41,8 +38,8 @@ export default function AuthModal({ mode: initialMode = 'login', onClose }) {
     setLoading(true);
     setError('');
     const endpoint = mode === 'login'
-      ? `${BASE_URL}/api/auth/login`
-      : `${BASE_URL}/api/auth/register`;
+      ? `${BACKEND_URL}/api/auth/login`
+      : `${BACKEND_URL}/api/auth/register`;
     const body = mode === 'login'
       ? { email: form.email, password: form.password }
       : { name: form.name, email: form.email, password: form.password };
@@ -69,7 +66,7 @@ export default function AuthModal({ mode: initialMode = 'login', onClose }) {
     e.preventDefault();
     setForgotLoading(true);
     try {
-      await fetch(`${BASE_URL}/api/auth/forgot-password`, {
+      await fetch(`${BACKEND_URL}/api/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: forgotEmail }),

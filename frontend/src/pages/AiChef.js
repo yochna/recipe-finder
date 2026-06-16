@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from '../components/AuthModal';
 import './AiChef.css';
+import { BACKEND_URL } from '../api';
 
 const CHEF_IMG = 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=560&h=600&q=85';
 const SUGGESTIONS = [
@@ -75,11 +76,10 @@ export default function AiChef() {
     setMessages(prev => [...prev, { role: 'user', text: msg }]);
     setLoading(true);
 
-    // Resolves to your Vercel Environment Variable or falls back directly to your live Render backend URL
-    const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://saffron-stove-backend.onrender.com';
+
 
    try {
-      const response = await fetch(`${API_BASE_URL}/api/chat`, {
+      const response = await fetch(`${BACKEND_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include', 

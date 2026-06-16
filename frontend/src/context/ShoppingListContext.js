@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import { BACKEND_URL } from '../api';
 
 const Ctx = createContext(null);
 
@@ -31,7 +32,7 @@ export function ShoppingListProvider({ children }) {
     const id = recipe.id ?? recipe.recipeId;
     if (items.find(i => i.recipeId === id)) return;
     try {
-      const res = await fetch(`/api/recipes/${id}/ingredients`, { credentials: 'include' });
+      const res = await fetch(`${BACKEND_URL}/api/recipes/${id}/ingredients`, { credentials: 'include' });
       const ingredients = await res.json();
       setItems(prev => [...prev, {
         recipeId: id,

@@ -1,45 +1,28 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { BACKEND_URL } from '../api';
 
 const AuthContext = createContext(null);
-const BACKEND_URL = 'https://saffron-stove-backend.onrender.com';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Helper to safely handle API errors without crashing
-  const getErrorMessage = (err) => {
-    return err.response?.data?.message || err.message || "An unexpected error occurred.";
-  };
+  // On app load, check if a valid session cookie already exists so the
+  // user doesn't get bumped to "logged out" on every page refresh.
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${BACKEND_URL}/api/auth/me`, { credentials: 'include' })
+      .then(res => (res.ok ? res.json() : Promise.reject()))
+      .then(data => { if (!cancelled) setUser(data.user); })
+      .catch(() => { if (!cancelled) setUser(null); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
- const login = async (email, password, setError) => {
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include',
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        // Throw a simple string, NOT a function
-        throw new Error(data.message || "Login failed");
-      }
-
-      const userData = await res.json();
-      setUser(userData);
-    } catch (err) {
-      console.error(err);
-      
-      // FIX: Ensure you are passing a string to the state setter
-      // If 'setError' is a function, call it with a string.
-      // Do NOT call the error object itself.
-      if (typeof setError === 'function') {
-        setError(err.message || "Invalid email or password");
-      }
-    }
-  };
+  // AuthModal performs the actual login/register fetch itself (it needs
+  // the response body to show field-specific errors). This just commits
+  // the returned user to global state once that fetch succeeds.
+  const login = (userData) => setUser(userData);
 
   const logout = async () => {
     try {
