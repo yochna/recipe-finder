@@ -27,9 +27,15 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+
+/* ✅ FIX: prevents right-side gap caused by ticker and other overflow elements */
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
 
 body {
+  overflow-x: hidden;
   background: var(--cream);
   color: var(--ink);
   font-family: var(--font-body);
@@ -75,6 +81,7 @@ img { display: block; max-width: 100%; }
 @keyframes ticker   { from { transform:translateX(0); } to { transform:translateX(-50%); } }
 @keyframes heartPop { 0%{transform:scale(1)} 40%{transform:scale(1.45)} 100%{transform:scale(1)} }
 @keyframes shimmer  { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+
 .sr-only {
   position: absolute;
   width: 1px;

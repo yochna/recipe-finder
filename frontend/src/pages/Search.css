@@ -7,7 +7,7 @@
 
 .search-page__title {
   font-family: var(--font-display);
-  font-size: clamp(36px, 5vw, 64px);
+  font-size: clamp(30px, 5vw, 64px);
   font-weight: 700;
   color: var(--ink);
   margin-top: 8px;
@@ -57,7 +57,6 @@
 }
 
 .sidebar__group { display: flex; flex-direction: column; gap: 14px; }
-
 .sidebar__group-label { font-size: 10px; letter-spacing: 1.6px; }
 
 .sidebar__chips {
@@ -95,21 +94,20 @@
   background: var(--parchment);
 }
 
-.search-page__field { flex: 1; padding: 14px 20px; }
-
+.search-page__field { flex: 1; padding: 14px 20px; min-width: 0; }
 .search-page__field-label { font-size: 10px; letter-spacing: 1.5px; margin-bottom: 4px; }
 
 .search-page__input {
   width: 100%;
   background: transparent;
   border: none;
-  font-size: 15px;
+  font-size: 16px; /* ✅ prevents iOS zoom */
   color: var(--ink);
 }
 .search-page__input::placeholder { color: var(--dim); }
 
 .search-page__btn {
-  padding: 0 36px;
+  padding: 0 28px;
   background: var(--rust);
   color: #fff;
   font-size: 12px;
@@ -140,39 +138,13 @@
 
 /* States */
 .search-page__state {
-  padding: 80px 0;
-  text-align: center;
-  animation: fadeIn 0.4s ease;
-}
-.search-page__state-title {
-  font-family: var(--font-display);
-  font-size: 24px;
-  color: var(--ink);
-  margin-bottom: 8px;
-}
-.search-page__state-text { font-size: 14px; color: var(--muted); }
-
-.search-page__empty {
-  padding: 80px 0;
-  color: var(--dim);
-  font-style: italic;
-  font-family: var(--font-display);
-  font-size: 18px;
-}
-
-/* ── State blocks (error, empty, no results) ── */
-.search-page__state {
   text-align: center;
   padding: 3rem 1rem;
   max-width: 480px;
   margin: 0 auto;
+  animation: fadeIn 0.4s ease;
 }
-
-.search-page__state-icon {
-  font-size: 2.5rem;
-  margin-bottom: 0.75rem;
-}
-
+.search-page__state-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
 .search-page__state-title {
   font-family: var(--font-display);
   font-size: 1.3rem;
@@ -180,18 +152,9 @@
   color: var(--ink);
   margin-bottom: 0.5rem;
 }
+.search-page__state-text { font-size: 0.9rem; color: var(--muted); margin-bottom: 1.25rem; }
+.search-page__state--error .search-page__state-title { color: #c0392b; }
 
-.search-page__state-text {
-  font-size: 0.9rem;
-  color: var(--muted);
-  margin-bottom: 1.25rem;
-}
-
-.search-page__state--error .search-page__state-title {
-  color: #c0392b;
-}
-
-/* ── Suggestion chips ── */
 .search-page__suggestions {
   display: flex;
   flex-wrap: wrap;
@@ -211,14 +174,8 @@
   transition: all 0.2s;
   color: var(--ink);
 }
+.search-page__suggestion-chip:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
 
-.search-page__suggestion-chip:hover {
-  background: var(--ink);
-  color: var(--paper);
-  border-color: var(--ink);
-}
-
-/* ── Retry button ── */
 .search-page__retry-btn {
   margin-top: 1rem;
   padding: 0.5rem 1.5rem;
@@ -231,23 +188,40 @@
   cursor: pointer;
   transition: opacity 0.2s;
 }
+.search-page__retry-btn:hover { opacity: 0.85; }
 
-.search-page__retry-btn:hover {
-  opacity: 0.85;
+.search-page__empty {
+  padding: 80px 0;
+  color: var(--dim);
+  font-style: italic;
+  font-family: var(--font-display);
+  font-size: 18px;
+  text-align: center;
 }
 
+/* ════════════════════════════════
+   TABLET  ≤ 1024px
+════════════════════════════════ */
 @media (max-width: 1024px) {
   .search-page__grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ════════════════════════════════
+   MOBILE  ≤ 768px
+════════════════════════════════ */
 @media (max-width: 768px) {
   .search-page__layout { grid-template-columns: 1fr; }
   .search-page__sidebar { display: none; }
-  .search-page__header { padding: 32px 20px 24px; }
-  .search-page__main { padding: 24px 20px; }
-  .search-page__grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .search-page__header { padding: 28px 20px 20px; }
+  .search-page__main { padding: 20px 16px; }
+  .search-page__grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+  .search-page__form { margin-bottom: 24px; }
+  .search-page__btn { padding: 0 16px; font-size: 11px; }
 }
 
-@media (max-width: 500px) {
+/* ════════════════════════════════
+   SMALL MOBILE  ≤ 480px
+════════════════════════════════ */
+@media (max-width: 480px) {
   .search-page__grid { grid-template-columns: 1fr; }
 }

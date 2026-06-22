@@ -25,6 +25,9 @@
   position: relative;
   animation: slideUp 0.25s ease;
   box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+  /* ✅ prevents modal going off-screen when keyboard opens on mobile */
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 @keyframes slideUp {
@@ -44,12 +47,17 @@
   line-height: 1;
   padding: 0.25rem;
   transition: color 0.2s;
+  /* ✅ larger tap target on mobile */
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
 }
-.auth-modal__close:hover { color: #333; }
+.auth-modal__close:hover { color: #333; background: rgba(0,0,0,0.05); }
 
-.auth-modal__header {
-  margin-bottom: 2rem;
-}
+.auth-modal__header { margin-bottom: 2rem; }
 
 .auth-modal__eyebrow {
   font-size: 0.65rem;
@@ -97,19 +105,17 @@
   border: 1px solid #ddd;
   border-radius: 3px;
   padding: 0.75rem 1rem;
-  font-size: 0.9rem;
   font-family: inherit;
   background: #fff;
   color: #1a1a1a;
   transition: border-color 0.2s;
   outline: none;
+  width: 100%;
+  /* ✅ 16px prevents iOS Safari from auto-zooming into inputs */
+  font-size: 16px;
 }
-.auth-modal__input:focus {
-  border-color: #c0392b;
-}
-.auth-modal__input::placeholder {
-  color: #bbb;
-}
+.auth-modal__input:focus { border-color: #c0392b; }
+.auth-modal__input::placeholder { color: #bbb; }
 
 .auth-modal__error {
   font-size: 0.8rem;
@@ -134,17 +140,11 @@
   cursor: pointer;
   transition: background 0.2s, transform 0.1s;
   margin-top: 0.25rem;
+  width: 100%;
 }
-.auth-modal__submit:hover:not(:disabled) {
-  background: #a93226;
-}
-.auth-modal__submit:active:not(:disabled) {
-  transform: scale(0.98);
-}
-.auth-modal__submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+.auth-modal__submit:hover:not(:disabled) { background: #a93226; }
+.auth-modal__submit:active:not(:disabled) { transform: scale(0.98); }
+.auth-modal__submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .auth-modal__switch {
   text-align: center;
@@ -165,9 +165,8 @@
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-.auth-modal__switch-btn:hover {
-  color: #a93226;
-}
+.auth-modal__switch-btn:hover { color: #a93226; }
+
 .auth-modal__forgot {
   background: none;
   border: none;
@@ -180,3 +179,11 @@
   width: 100%;
 }
 .auth-modal__forgot:hover { text-decoration: underline; }
+
+/* ════════════════════════════════
+   MOBILE  ≤ 480px
+════════════════════════════════ */
+@media (max-width: 480px) {
+  .auth-modal { padding: 1.75rem 1.25rem; border-radius: 12px; }
+  .auth-modal__title { font-size: 1.4rem; }
+}

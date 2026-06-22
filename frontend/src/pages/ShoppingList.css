@@ -14,15 +14,12 @@
 }
 
 .shop__title {
-  font-size: clamp(2rem, 5vw, 3rem);
+  font-size: clamp(1.8rem, 5vw, 3rem);
   font-weight: 800;
   margin: 0.25rem 0;
 }
 
-.shop__sub {
-  color: #888;
-  margin: 0;
-}
+.shop__sub { color: #888; margin: 0; }
 
 .shop__header-actions {
   display: flex;
@@ -41,24 +38,12 @@
   gap: 0.4rem;
   transition: all 0.2s;
 }
-.shop__btn--outline {
-  background: transparent;
-  border: 1px solid #ddd;
-  color: #333;
-}
+.shop__btn--outline { background: transparent; border: 1px solid #ddd; color: #333; }
 .shop__btn--outline:hover { background: #f5f5f5; }
-.shop__btn--danger {
-  background: transparent;
-  border: 1px solid #e74c3c;
-  color: #e74c3c;
-}
+.shop__btn--danger { background: transparent; border: 1px solid #e74c3c; color: #e74c3c; }
 .shop__btn--danger:hover { background: #fdf2f2; }
 
-.shop__body {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
+.shop__body { display: flex; flex-direction: column; gap: 2rem; }
 
 .shop__recipe-block {
   background: #fff;
@@ -76,11 +61,7 @@
   border-bottom: 1px solid #f0f0f0;
 }
 
-.shop__recipe-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin: 0;
-}
+.shop__recipe-title { font-size: 1.1rem; font-weight: 700; margin: 0; }
 
 .shop__remove {
   background: none;
@@ -91,6 +72,7 @@
   display: flex;
   align-items: center;
   gap: 0.3rem;
+  flex-shrink: 0;
 }
 .shop__remove:hover { text-decoration: underline; }
 
@@ -130,16 +112,9 @@
   white-space: nowrap;
 }
 
-.shop__empty {
-  text-align: center;
-  padding: 4rem 0;
-}
+.shop__empty { text-align: center; padding: 4rem 0; }
 .shop__empty-eyebrow { color: #888; }
-.shop__empty-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0.5rem 0 1.5rem;
-}
+.shop__empty-title { font-size: 1.5rem; font-weight: 700; margin: 0.5rem 0 1.5rem; }
 .shop__empty-cta {
   display: inline-block;
   padding: 0.75rem 1.5rem;
@@ -150,6 +125,19 @@
   font-weight: 600;
 }
 .shop__empty-cta:hover { background: #a93226; }
+
+/* ════════════════════════════════
+   MOBILE  ≤ 600px
+════════════════════════════════ */
+@media (max-width: 600px) {
+  .shop { padding: 1.5rem 1rem 3rem; }
+  .shop__header { flex-direction: column; align-items: flex-start; }
+  .shop__header-actions { width: 100%; }
+  .shop__btn { flex: 1; justify-content: center; font-size: 0.78rem; padding: 0.55rem 0.5rem; }
+  .shop__recipe-block { padding: 1rem; border-radius: 10px; }
+  .shop__recipe-title { font-size: 0.95rem; }
+  .shop__ingredient-amount { display: none; }
+}
 
 /* Print styles */
 @media print {

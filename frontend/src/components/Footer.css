@@ -51,3 +51,18 @@
   background: linear-gradient(to right, var(--rust), var(--rust-light), transparent);
   margin: 0 -40px;
 }
+
+/* ════════════════════════════════
+   MOBILE  ≤ 600px
+════════════════════════════════ */
+@media (max-width: 600px) {
+  .footer { padding: 28px 20px 0; }
+  .footer__bar { margin: 0 -20px; }
+  .footer__inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding-bottom: 20px;
+  }
+  .footer__powered { font-size: 10px; }
+}
