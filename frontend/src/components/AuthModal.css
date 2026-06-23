@@ -25,7 +25,6 @@
   position: relative;
   animation: slideUp 0.25s ease;
   box-shadow: 0 24px 64px rgba(0,0,0,0.18);
-  /* ✅ prevents modal going off-screen when keyboard opens on mobile */
   max-height: 90vh;
   overflow-y: auto;
 }
@@ -47,7 +46,6 @@
   line-height: 1;
   padding: 0.25rem;
   transition: color 0.2s;
-  /* ✅ larger tap target on mobile */
   width: 36px;
   height: 36px;
   display: flex;
@@ -111,7 +109,6 @@
   transition: border-color 0.2s;
   outline: none;
   width: 100%;
-  /* ✅ 16px prevents iOS Safari from auto-zooming into inputs */
   font-size: 16px;
 }
 .auth-modal__input:focus { border-color: #c0392b; }
@@ -180,9 +177,6 @@
 }
 .auth-modal__forgot:hover { text-decoration: underline; }
 
-/* ════════════════════════════════
-   MOBILE  ≤ 480px
-════════════════════════════════ */
 @media (max-width: 480px) {
   .auth-modal { padding: 1.75rem 1.25rem; border-radius: 12px; }
   .auth-modal__title { font-size: 1.4rem; }

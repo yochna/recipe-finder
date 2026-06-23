@@ -64,9 +64,9 @@
   padding: 14px 18px;
   background: transparent;
   border: none;
-  font-size: 16px; /* ✅ prevents iOS zoom */
+  font-size: 16px; 
   color: var(--ink);
-  min-width: 0; /* ✅ prevents flex overflow */
+  min-width: 0; 
 }
 .home__hero-input::placeholder { color: var(--dim); }
 
@@ -110,7 +110,7 @@
 
 /* ── Ticker ── */
 .home__ticker-wrap {
-  overflow: hidden; /* ✅ this clips the ticker so it doesn't cause page overflow */
+  overflow: hidden; 
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   background: var(--parchment);
@@ -136,6 +136,14 @@
 }
 
 .home__ticker-dot { color: var(--rust); font-size: 14px; }
+@keyframes ticker {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
 
 /* ── Sections ── */
 .home__section {

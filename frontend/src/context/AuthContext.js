@@ -7,8 +7,6 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // On app load, check if a valid session cookie already exists so the
-  // user doesn't get bumped to "logged out" on every page refresh.
   useEffect(() => {
     let cancelled = false;
     fetch(`${BACKEND_URL}/api/auth/me`, { credentials: 'include' })

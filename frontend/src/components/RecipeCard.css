@@ -1,4 +1,4 @@
-/* ── Base card ── */
+
 .rcard {
   display: flex;
   flex-direction: column;
@@ -14,7 +14,6 @@
   transform: translateY(-3px);
 }
 
-/* ── Image ── */
 .rcard__img-wrap {
   position: relative;
   overflow: hidden;
@@ -30,10 +29,9 @@
 }
 .rcard:hover .rcard__img-wrap img { transform: scale(1.04); }
 
-/* Featured variant */
+
 .rcard--featured .rcard__img-wrap img { aspect-ratio: 16/10; }
 
-/* ── Heart button ── */
 .rcard__heart {
   position: absolute;
   top: 12px;
@@ -64,7 +62,6 @@
 .rcard__heart:hover  { background: #fff; color: #e53935; transform: translateY(0) scale(1.1); }
 .rcard__heart.pop    { animation: heartPop 0.4s ease; }
 
-/* ✅ Always show heart on touch devices (no hover on phones) */
 @media (hover: none) {
   .rcard__heart {
     opacity: 1;
@@ -72,7 +69,6 @@
   }
 }
 
-/* ── Body ── */
 .rcard__body {
   padding: 16px 18px 18px;
   display: flex;
@@ -185,20 +181,16 @@
   cursor: default;
 }
 
-/* ════════════════════════════════
-   SMALL MOBILE  ≤ 480px
-════════════════════════════════ */
 @media (max-width: 480px) {
   .rcard__body { padding: 12px 12px 14px; }
   .rcard__title { font-size: 15px; }
   .rcard__title--lg { font-size: 17px; }
-  /* Put buttons side by side to save vertical space */
   .rcard__actions { flex-direction: row; }
   .rcard__cook-btn,
   .rcard__shop-btn { font-size: 0.72rem; padding: 0.5rem 0.4rem; }
 }
 
-/* ── Animations ── */
+
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }

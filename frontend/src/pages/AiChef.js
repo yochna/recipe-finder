@@ -1,4 +1,4 @@
-// cache bust deploy trigger 2026
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from '../components/AuthModal';

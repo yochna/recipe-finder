@@ -27,14 +27,14 @@ if (!GROQ_KEY)  { console.error("❌ Missing GROQ_KEY in .env");          proces
 
 // ---------- Dynamic CORS Configuration ----------
 const allowedOrigins = [
-  'https://recipe-finder-nu-seven.vercel.app', // Your production Vercel frontend
-  'http://localhost:3000',                     // React local development port
-  'http://localhost:5173'                      // Vite local development port
+  'https://recipe-finder-nu-seven.vercel.app', 
+    'http://localhost:3000',                     
+  'http://localhost:5173'                   
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow server-to-server or tools like Postman (no origin header)
+   
     if (!origin) return callback(null, true);
     
     // Check if the origin matches our allowed list, or matches a local address during development
@@ -44,7 +44,7 @@ app.use(cors({
       callback(new Error("Blocked by CORS policy"));
     }
   },
-  credentials: true, // Crucial for passing cookies securely
+  credentials: true, 
   methods: ["GET", "POST", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
@@ -126,10 +126,9 @@ const Favorite = mongoose.model("Favorite", favoriteSchema);
 // ---------- Cookie helper ----------
 const cookieOptions = {
   httpOnly: true,
-  // ✅ FIX: sameSite is 'none' only in production with secure: true
   sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   secure: process.env.NODE_ENV === 'production', 
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  maxAge: 7 * 24 * 60 * 60 * 1000, 
 };
 
 // ---------- Auth Middleware ----------

@@ -52,9 +52,6 @@
   margin: 0 -40px;
 }
 
-/* ════════════════════════════════
-   MOBILE  ≤ 600px
-════════════════════════════════ */
 @media (max-width: 600px) {
   .footer { padding: 28px 20px 0; }
   .footer__bar { margin: 0 -20px; }

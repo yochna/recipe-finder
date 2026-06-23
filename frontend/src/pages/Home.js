@@ -18,7 +18,7 @@ const CATEGORIES = [
   { name: 'Breakfast',  img: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&w=400&h=320&q=80' },
 ];
 
-// Pick a random term once per page mount (stable across re-renders)
+
 const FEATURED_TERMS = ['paella', 'pasta', 'curry', 'steak', 'sushi', 'tacos'];
 const randomTerm = FEATURED_TERMS[Math.floor(Math.random() * FEATURED_TERMS.length)];
 
@@ -26,12 +26,11 @@ export default function Home() {
   const navigate = useNavigate();
   const [heroQuery, setHeroQuery] = useState('');
 
-  // ✅ TanStack Query: result is cached by key ['featured', randomTerm]
-  // Coming back to Home? Instant — served from cache, no network trip.
+
   const { data: featured = [], isLoading: loadingFeatured } = useQuery({
     queryKey: ['featured', randomTerm],
     queryFn: () => searchRecipes({ query: randomTerm, number: 3 }),
-    staleTime: 1000 * 60 * 5, // 5 min — these don't need to refresh often
+    staleTime: 1000 * 60 * 5, 
   });
 
   const handleHeroSubmit = (e) => {

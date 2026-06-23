@@ -8,7 +8,6 @@ export function ShoppingListProvider({ children }) {
   const { user } = useAuth();
 
   const [items, setItems] = useState(() => {
-    // Only load from localStorage if user is logged in
     try {
       return JSON.parse(localStorage.getItem('shoppingList') || '[]');
     } catch { return []; }
@@ -28,7 +27,7 @@ export function ShoppingListProvider({ children }) {
   }, [user]);
 
   const addRecipe = async (recipe) => {
-    if (!user) return; // guard: don't allow adding if not signed in
+    if (!user) return; 
     const id = recipe.id ?? recipe.recipeId;
     if (items.find(i => i.recipeId === id)) return;
     try {

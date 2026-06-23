@@ -28,7 +28,6 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ✅ FIX: prevents right-side gap caused by ticker and other overflow elements */
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
