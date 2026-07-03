@@ -100,6 +100,7 @@ const userSchema = new mongoose.Schema({
   name:              { type: String, required: true, trim: true },
   email:             { type: String, required: true, unique: true, lowercase: true, trim: true },
   password:          { type: String, required: true },
+  isAdmin:           { type: Boolean, default: false },
   resetToken:        String,
   resetTokenExpiry:  Date,
 }, { timestamps: true });
@@ -144,10 +145,16 @@ const authenticate = (req, res, next) => {
   }
 };
 
+// Must be used after `authenticate`. Blocks non-admin users from admin-only routes.
+const adminOnly = (req, res, next) => {
+  if (!req.user?.isAdmin) return res.status(403).json({ error: "Admin access required" });
+  next();
+};
+
 // ---------- Auth Routes ----------
 
 app.post("/api/auth/register", async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
   if (!name || !email || !password)
     return res.status(400).json({ error: "Name, email and password are required" });
   if (password.length < 6)
@@ -156,10 +163,15 @@ app.post("/api/auth/register", async (req, res) => {
     const exists = await User.findOne({ email });
     if (exists) return res.status(409).json({ error: "Email already registered" });
     const hashed = await bcrypt.hash(password, 10);
-    const user = await new User({ name, email, password: hashed }).save();
-    const token = jwt.sign({ id: user._id, name: user.name, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
+    const isAdmin = role === 'admin';
+    const user = await new User({ name, email, password: hashed, isAdmin }).save();
+    const token = jwt.sign(
+      { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
     res.cookie('token', token, cookieOptions);
-    res.status(201).json({ user: { id: user._id, name: user.name, email: user.email } });
+    res.status(201).json({ user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -174,9 +186,13 @@ app.post("/api/auth/login", async (req, res) => {
     if (!user) return res.status(401).json({ error: "Invalid email or password" });
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(401).json({ error: "Invalid email or password" });
-    const token = jwt.sign({ id: user._id, name: user.name, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign(
+      { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
     res.cookie('token', token, cookieOptions);
-    res.json({ user: { id: user._id, name: user.name, email: user.email } });
+    res.json({ user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -383,6 +399,56 @@ app.get("/api/recipes/:id/ingredients", async (req, res) => {
     if (!response.ok) return res.status(response.status).json({ error: `Spoonacular error ${response.status}` });
     const data = await response.json();
     res.json(data.ingredients || []);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---------- Admin Routes ----------
+
+app.get("/api/admin/stats", authenticate, adminOnly, async (req, res) => {
+  try {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
+
+    const [totalUsers, totalAdmins, totalFavorites, newUsersLast7Days, newUsersToday] = await Promise.all([
+      User.countDocuments(),
+      User.countDocuments({ isAdmin: true }),
+      Favorite.countDocuments(),
+      User.countDocuments({ createdAt: { $gte: sevenDaysAgo } }),
+      User.countDocuments({ createdAt: { $gte: startOfToday } }),
+    ]);
+
+    res.json({
+      totalUsers,
+      totalAdmins,
+      totalRegularUsers: totalUsers - totalAdmins,
+      totalFavorites,
+      newUsersLast7Days,
+      newUsersToday,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/admin/users", authenticate, adminOnly, async (req, res) => {
+  try {
+    const users = await User.find()
+      .select("name email isAdmin createdAt")
+      .sort({ createdAt: -1 });
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/api/admin/favorites", authenticate, adminOnly, async (req, res) => {
+  try {
+    const favorites = await Favorite.find()
+      .populate("userId", "name email")
+      .sort({ createdAt: -1 });
+    res.json(favorites);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
