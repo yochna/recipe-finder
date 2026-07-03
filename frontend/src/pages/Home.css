@@ -1,11 +1,30 @@
-.home { min-height: calc(100vh - 68px); }
+ .home { min-height: calc(100vh - 68px); }
 
-/* ── Hero ── */
+
+
 .home__hero {
   display: grid;
   grid-template-columns: 1fr 1fr;
   min-height: 560px;
   overflow: hidden;
+  align-items: center; 
+} 
+
+
+
+.home__hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr; 
+  align-items: center;          
+  gap: 40px;                      
+  padding: 0 40px;
+  min-height: 560px;
+}
+
+
+.home__hero-right {
+  display: block;
+  width: 100%;
 }
 
 .home__hero-left {
@@ -84,7 +103,7 @@
 }
 .home__hero-btn:hover { background: var(--rust-dark); }
 
-/* Right photo */
+
 .home__hero-right {
   position: relative;
   overflow: hidden;
@@ -108,7 +127,7 @@
   color: rgba(255,255,255,0.7);
 }
 
-/* ── Ticker ── */
+
 .home__ticker-wrap {
   overflow: hidden; 
   border-top: 1px solid var(--border);
@@ -145,7 +164,7 @@
   }
 }
 
-/* ── Sections ── */
+
 .home__section {
   max-width: 1240px;
   margin: 0 auto;
@@ -194,7 +213,6 @@
   margin-left: 20px;
 }
 
-/* ── Categories ── */
 .home__categories {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -236,7 +254,6 @@
   color: var(--ink);
 }
 
-/* ── AI Banner ── */
 .home__ai-banner {
   display: flex;
   align-items: center;
@@ -290,7 +307,7 @@
   align-items: stretch;
 }
 
-/* ── Skeleton ── */
+
 .home__skeleton {
   height: 380px;
   border-radius: var(--radius);
@@ -299,49 +316,84 @@
   animation: shimmer 1.5s infinite;
 }
 
-/* ════════════════════════════════
-   TABLET  ≤ 1024px
-════════════════════════════════ */
 @media (max-width: 1024px) {
   .home__categories { grid-template-columns: repeat(3, 1fr); }
   .home__featured-grid { grid-template-columns: 1fr 1fr; }
   .home__featured-grid > :first-child { grid-column: 1/-1; }
 }
 
-/* ════════════════════════════════
-   MOBILE  ≤ 768px
-════════════════════════════════ */
+
 @media (max-width: 768px) {
-  /* Hero */
-  .home__hero { grid-template-columns: 1fr; min-height: unset; }
-  .home__hero-right { display: none; }
+  
+  
+  .home__hero { grid-template-columns: 1fr; min-height: auto; }
+  .home__hero-right { display: block; height: 300px; width: 100%; } 
   .home__hero-left { padding: 40px 20px; }
-  .home__hero-desc br { display: none; } /* ✅ removes forced line breaks on mobile */
+
+ 
+  .home__hero-desc br { display: none; }
   .home__hero-form { max-width: 100%; }
 
-  /* Sections */
+  
   .home__section { padding: 40px 20px; }
   .home__section-header { flex-direction: column; align-items: flex-start; gap: 8px; }
   .home__see-all { margin-left: 0; }
   .home__tasting-sub { margin-left: 0; font-size: 15px; }
 
-  /* Categories */
+  
   .home__categories { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .home__cat-name { font-size: 17px; }
 
-  /* AI Banner */
+ 
   .home__ai-banner { flex-direction: column; padding: 36px 20px; gap: 24px; }
   .home__ai-quote { text-align: left; }
 
-  /* Featured grid */
+  
   .home__featured-grid { grid-template-columns: 1fr; gap: 16px; }
   .home__skeleton { height: 280px; }
 }
 
-/* ════════════════════════════════
-   SMALL MOBILE  ≤ 400px
-════════════════════════════════ */
+
 @media (max-width: 400px) {
   .home__categories { grid-template-columns: 1fr 1fr; gap: 10px; }
   .home__hero-btn { padding: 14px 14px; font-size: 10px; }
+}   
+
+
+/* ── Admin bar ── */
+.home__admin-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 24px;
+  background: var(--ink);
+  color: #f2ece0;
+  animation: fadeUp 0.4s ease both;
+}
+
+.home__admin-bar-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+.home__admin-bar-btn {
+  padding: 8px 18px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--rust);
+  color: #fff;
+  border-radius: var(--radius);
+  transition: background 0.2s;
+}
+.home__admin-bar-btn:hover { background: var(--rust-dark); }
+
+@media (max-width: 600px) {
+  .home__admin-bar { flex-direction: column; align-items: flex-start; }
 }
