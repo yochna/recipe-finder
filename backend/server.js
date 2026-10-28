@@ -430,18 +430,32 @@ app.get("/api/recipes/:id/steps", async (req, res) => {
 });
 
 // ---------- Recipe Detail Route ----------
-// One Spoonacular call returns everything the detail page needs:
-// extendedIngredients, nutrition, summary and analyzedInstructions.
+// /information returns ingredients + nutrition + summary but NOT analyzedInstructions,
+// so we fetch both endpoints in parallel and merge the steps into one response.
 app.get("/api/recipes/:id/details", async (req, res) => {
   const { id } = req.params;
   if (!/^\d+$/.test(id)) return res.status(400).json({ error: "Invalid recipe id" });
   try {
-    const url = new URL(`https://api.spoonacular.com/recipes/${id}/information`);
-    url.searchParams.append("includeNutrition", "true");
-    url.searchParams.append("apiKey", API_KEY);
-    const response = await fetch(url.toString());
-    if (!response.ok) return res.status(response.status).json({ error: `Spoonacular error ${response.status}` });
-    res.json(await response.json());
+    const infoUrl = new URL(`https://api.spoonacular.com/recipes/${id}/information`);
+    infoUrl.searchParams.append("includeNutrition", "true");
+    infoUrl.searchParams.append("apiKey", API_KEY);
+    const instrUrl = new URL(`https://api.spoonacular.com/recipes/${id}/analyzedInstructions`);
+    instrUrl.searchParams.append("apiKey", API_KEY);
+
+    const [infoRes, instrRes] = await Promise.all([
+      fetch(infoUrl.toString()),
+      fetch(instrUrl.toString()).catch(() => null),
+    ]);
+    if (!infoRes.ok) return res.status(infoRes.status).json({ error: `Spoonacular error ${infoRes.status}` });
+
+    const data = await infoRes.json();
+    try {
+      const instr = instrRes && instrRes.ok ? await instrRes.json() : [];
+      data.analyzedInstructions = Array.isArray(instr) ? instr : [];
+    } catch {
+      data.analyzedInstructions = [];
+    }
+    res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

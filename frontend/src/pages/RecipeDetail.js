@@ -201,7 +201,7 @@ export default function RecipeDetail() {
         )}
       </div>
 
-      {steps.length > 0 && (
+      {steps.length > 0 ? (
         <section className="rd__panel rd__steps" aria-label="Directions">
           <div className="rd__panel-head"><h2><i className="fas fa-list-ol" aria-hidden="true" /> Directions</h2></div>
           <ol className="rd__steps-list">
@@ -219,6 +219,18 @@ export default function RecipeDetail() {
               </li>
             ))}
           </ol>
+        </section>
+      ) : (
+        <section className="rd__panel rd__steps" aria-label="Directions">
+          <div className="rd__panel-head"><h2><i className="fas fa-list-ol" aria-hidden="true" /> Directions</h2></div>
+          <p className="rd__nosteps">
+            This recipe doesn't have structured step-by-step instructions.{" "}
+            {r.sourceUrl && (
+              <a href={r.sourceUrl} target="_blank" rel="noopener noreferrer">
+                View the full method at the original source <i className="fas fa-arrow-up-right-from-square" aria-hidden="true" />
+              </a>
+            )}
+          </p>
         </section>
       )}
 
