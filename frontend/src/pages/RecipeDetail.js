@@ -6,6 +6,7 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useShoppingList } from '../context/ShoppingListContext';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from '../components/AuthModal';
+import Reviews from '../components/Reviews';
 import './RecipeDetail.css';
 
 const FALLBACK = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&h=400&q=80';
@@ -233,6 +234,8 @@ export default function RecipeDetail() {
           </p>
         </section>
       )}
+
+      <Reviews recipeId={r.id} recipeTitle={r.title} user={user} onRequireAuth={() => setShowModal('login')} />
 
       {showModal && <AuthModal mode={showModal} onClose={() => setShowModal(false)} />}
     </main>

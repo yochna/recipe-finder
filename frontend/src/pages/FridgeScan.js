@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from '../components/AuthModal';
 import RecipeCard from '../components/RecipeCard';
-import { scanIngredients, getRecipesByIngredients } from '../api';
+import { scanIngredients, getRecipesByIngredients, saveScan, getScans, deleteScan } from '../api';
 import './FridgeScan.css';
 
 const MAX_EDGE = 768; // downscale before upload — keeps the payload small and Gemini-accurate
@@ -34,6 +34,8 @@ export default function FridgeScan() {
   const [matching, setMatching] = useState(false);
   const [error, setError] = useState(null);
 
+  const [weekScans, setWeekScans] = useState([]);
+
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -45,6 +47,14 @@ export default function FridgeScan() {
   }, []);
 
   useEffect(() => stopCamera, [stopCamera]);
+
+  const loadHistory = useCallback(async () => {
+    if (!user) return;
+    try { setWeekScans(await getScans({ days: 7 })); }
+    catch { /* history is non-critical — stay silent */ }
+  }, [user]);
+
+  useEffect(() => { loadHistory(); }, [loadHistory]);
 
   const startCamera = async () => {
     setError(null);
@@ -127,11 +137,29 @@ export default function FridgeScan() {
       const results = await getRecipesByIngredients(chips);
       setRecipes(results);
       if (!results.length) setError('Nothing matched these ingredients yet — try removing a few items or adding staples like onion, garlic or tomato.');
+      saveScan(chips, results.length).then(loadHistory).catch(() => {});
     } catch (err) {
       setError(err.message || 'Recipe matching failed — try again.');
     } finally {
       setMatching(false);
     }
+  };
+
+  const reopenScan = (scan) => {
+    stopCamera();
+    setPhoto(null);
+    setError(null);
+    setRecipes([]);
+    setChips(scan.ingredients);
+    setDetected(scan.ingredients);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const removeScan = async (id) => {
+    try {
+      await deleteScan(id);
+      setWeekScans(prev => prev.filter(s => s._id !== id));
+    } catch { /* ignore */ }
   };
 
   const reset = () => {
@@ -295,6 +323,44 @@ export default function FridgeScan() {
           </div>
         </section>
       )}
+
+      {weekScans.length > 0 && (() => {
+        const unique = [...new Set(weekScans.flatMap(s => s.ingredients))];
+        return (
+          <section className="fs__history" aria-label="Your scans this week">
+            <h2 className="fs__history-title">This week in your kitchen</h2>
+            <p className="fs__history-summary">
+              {weekScans.length} scan{weekScans.length === 1 ? '' : 's'} · {unique.length} ingredient{unique.length === 1 ? '' : 's'} explored
+            </p>
+            <ul className="fs__history-list">
+              {weekScans.map(s => (
+                <li key={s._id} className="fs__history-item">
+                  <div className="fs__history-meta">
+                    <span className="fs__history-date">
+                      {new Date(s.createdAt).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                    </span>
+                    <span className="fs__history-count">{s.recipeCount} recipe{s.recipeCount === 1 ? '' : 's'}</span>
+                  </div>
+                  <div className="fs__history-chips">
+                    {s.ingredients.slice(0, 8).map(i => <span key={i} className="fs__chip fs__chip--sm">{i}</span>)}
+                    {s.ingredients.length > 8 && (
+                      <span className="fs__chip fs__chip--sm">+{s.ingredients.length - 8}</span>
+                    )}
+                  </div>
+                  <div className="fs__history-actions">
+                    <button className="fs__btn fs__btn--sm" onClick={() => reopenScan(s)}>
+                      <i className="fas fa-rotate-left" aria-hidden="true" /> Cook again
+                    </button>
+                    <button className="fs__icon-btn" onClick={() => removeScan(s._id)} aria-label="Delete this scan">
+                      <i className="fas fa-trash" aria-hidden="true" />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        );
+      })()}
     </main>
   );
 }

@@ -131,3 +131,65 @@ export async function getRecipeDetails(id) {
   }
   return res.json();
 }
+
+// ── Scan history ──
+
+export async function saveScan(ingredients, recipeCount) {
+  const res = await fetch(`${BASE}/api/scans`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ ingredients, recipeCount }),
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.error || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function getScans({ days } = {}) {
+  const params = new URLSearchParams();
+  if (days) params.append('days', String(days));
+  const qs = params.toString();
+  const res = await fetch(`${BASE}/api/scans${qs ? `?${qs}` : ''}`, { credentials: 'include' });
+  if (!res.ok) throw new Error('Failed to load scan history');
+  return res.json();
+}
+
+export async function deleteScan(id) {
+  const res = await fetch(`${BASE}/api/scans/${id}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+  if (!res.ok) throw new Error('Failed to delete scan');
+  return res.json();
+}
+
+// ── Reviews ──
+
+export async function getRecipeReviews(id) {
+  const res = await fetch(`${BASE}/api/reviews/recipe/${id}`);
+  if (!res.ok) throw new Error('Failed to load reviews');
+  return res.json(); // { reviews, count, avg }
+}
+
+export async function getMyReview(id) {
+  const res = await fetch(`${BASE}/api/reviews/mine/${id}`, { credentials: 'include' });
+  if (!res.ok) throw new Error('Failed to load your review');
+  return res.json(); // review | null
+}
+
+export async function submitReview({ recipeId, recipeTitle, rating, comment }) {
+  const res = await fetch(`${BASE}/api/reviews`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ recipeId, recipeTitle, rating, comment }),
+  });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.error || `Error ${res.status}`);
+  }
+  return res.json();
+}

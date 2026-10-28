@@ -180,6 +180,57 @@
 .fs__gate-desc { color: var(--muted); }
 .fs__gate-actions { display: flex; gap: .75rem; }
 
+/* scan history — "this week in your kitchen" */
+.fs__history {
+  margin-top: 3.5rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid var(--border2);
+  animation: fadeUp .45s ease both;
+}
+.fs__history-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: .25rem;
+}
+.fs__history-summary { color: var(--muted); font-size: .92rem; margin-bottom: 1.5rem; }
+.fs__history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+.fs__history-item {
+  display: flex;
+  flex-direction: column;
+  gap: .7rem;
+  background: var(--parchment);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  padding: 1.1rem 1.2rem;
+}
+.fs__history-meta { display: flex; justify-content: space-between; align-items: baseline; }
+.fs__history-date { font-weight: 600; color: var(--ink-soft); font-size: .92rem; }
+.fs__history-count { color: var(--rust-dark); font-size: .82rem; font-weight: 600; }
+.fs__history-chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+.fs__chip--sm { padding: .2rem .55rem; font-size: .78rem; }
+.fs__history-actions { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
+.fs__btn--sm { padding: .45rem .9rem; font-size: .85rem; }
+.fs__icon-btn {
+  border: none;
+  background: none;
+  color: var(--dim);
+  cursor: pointer;
+  font-size: .9rem;
+  padding: .4rem .5rem;
+  border-radius: var(--radius);
+  transition: color .15s ease, background .15s ease;
+}
+.fs__icon-btn:hover { color: var(--rust); background: var(--rust-pale); }
+
 @media (max-width: 640px) {
   .fs { padding-top: 2.5rem; }
   .fs__capture-cta { padding: 2.5rem 1rem; }

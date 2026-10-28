@@ -23,13 +23,9 @@ const GEMINI_KEY = process.env.GEMINI_KEY;
 const GMAIL_USER = process.env.GMAIL_USER;
 const GMAIL_PASS = process.env.GMAIL_PASS;
 
-if (!API_KEY)    { console.error("❌ Missing SPOONACULAR_KEY in .env"); process.exit(1); }
-if (!MONGO_URI)  { console.error("❌ Missing MONGO_URI in .env");         process.exit(1); }
-if (!GROQ_KEY)   { console.error("❌ Missing GROQ_KEY in .env");          process.exit(1); }
-if (!JWT_SECRET) { console.error("❌ Missing JWT_SECRET in .env");        process.exit(1); }
-if (!GEMINI_KEY) { console.error("❌ Missing GEMINI_KEY in .env");        process.exit(1); }
-
-const genAI = new GoogleGenerativeAI(GEMINI_KEY);
+// Env validation happens in start() (below) so the module can be imported by
+// tests without process.exit killing the Jest worker.
+const genAI = new GoogleGenerativeAI(GEMINI_KEY || "test-placeholder-key");
 
 // ---------- Dynamic CORS Configuration ----------
 const allowedOrigins = [
@@ -62,6 +58,8 @@ app.use(express.json());
 app.use(cookieParser());
 
 // ---------- Rate Limiters ----------
+// Every limiter is skipped under NODE_ENV=test so the suite isn't throttled.
+const limiterTestSkip = () => process.env.NODE_ENV === "test";
 
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -69,6 +67,7 @@ const generalLimiter = rateLimit({
   message: { error: 'Too many requests, please try again later.' },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: limiterTestSkip,
 });
 
 const authLimiter = rateLimit({
@@ -77,6 +76,7 @@ const authLimiter = rateLimit({
   message: { error: 'Too many attempts, please try again in 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: limiterTestSkip,
 });
 
 const searchLimiter = rateLimit({
@@ -85,6 +85,7 @@ const searchLimiter = rateLimit({
   message: { error: 'Search limit reached, please slow down.' },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: limiterTestSkip,
 });
 
 // AI calls cost real quota — keep them well under the general limit
@@ -94,6 +95,7 @@ const aiLimiter = rateLimit({
   message: { error: 'You are using the kitchen too fast — try again in a minute.' },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: limiterTestSkip,
 });
 
 app.use('/api/', generalLimiter);           // applies to all routes
@@ -101,10 +103,6 @@ app.use('/api/auth/', authLimiter);         // stricter on login/register
 app.use('/api/recipes', searchLimiter);     // strictest on Spoonacular calls
 app.use('/api/chat', aiLimiter);            // Groq quota protection
 app.use('/api/scan', aiLimiter);            // Gemini quota protection
-
-mongoose.connect(MONGO_URI)
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch(err => { console.error("MongoDB error:", err); process.exit(1); });
 
 // ---------- Mailer ----------
 
@@ -142,6 +140,30 @@ const favoriteSchema = new mongoose.Schema({
 favoriteSchema.index({ userId: 1, recipeId: 1 }, { unique: true });
 
 const Favorite = mongoose.model("Favorite", favoriteSchema);
+
+const scanSchema = new mongoose.Schema({
+  userId:      { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  ingredients: [{ type: String }],
+  recipeCount: { type: Number, default: 0 },
+}, { timestamps: true });
+
+scanSchema.index({ userId: 1, createdAt: -1 });
+
+const Scan = mongoose.model("Scan", scanSchema);
+
+const reviewSchema = new mongoose.Schema({
+  userId:      { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  recipeId:    { type: Number, required: true },
+  recipeTitle: { type: String, default: "" },
+  rating:      { type: Number, required: true, min: 1, max: 5 },
+  comment:     { type: String, default: "", maxlength: 1000 },
+  status:      { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
+}, { timestamps: true });
+
+reviewSchema.index({ recipeId: 1, status: 1 });
+reviewSchema.index({ userId: 1, recipeId: 1 }, { unique: true });
+
+const Review = mongoose.model("Review", reviewSchema);
 
 // ---------- Cookie helper ----------
 const cookieOptions = {
@@ -414,6 +436,128 @@ app.get("/api/recipes/by-ingredients", async (req, res) => {
   }
 });
 
+// ---------- Scan History Routes ----------
+
+// Whitelist + normalise the ingredient list exactly like POST /api/scan does,
+// so a raw client body can never stuff arbitrary fields into the document.
+const pickScanFields = (b) => {
+  const ingredients = [...new Set(
+    (Array.isArray(b.ingredients) ? b.ingredients : [])
+      .filter(x => typeof x === "string")
+      .map(x => x.trim().toLowerCase().slice(0, 60))
+      .filter(Boolean)
+  )].slice(0, 25);
+  const n = Number(b.recipeCount);
+  const recipeCount = Number.isFinite(n) ? Math.max(0, Math.min(999, Math.round(n))) : 0;
+  return { ingredients, recipeCount };
+};
+
+app.post("/api/scans", authenticate, async (req, res) => {
+  try {
+    const { ingredients, recipeCount } = pickScanFields(req.body || {});
+    if (!ingredients.length) return res.status(400).json({ error: "No ingredients to save" });
+    const doc = await new Scan({ userId: req.user.id, ingredients, recipeCount }).save();
+    res.status(201).json(doc);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/scans            -> recent scans
+// GET /api/scans?days=7     -> "this week" window
+app.get("/api/scans", authenticate, async (req, res) => {
+  try {
+    const filter = { userId: req.user.id };
+    const days = Number(req.query.days);
+    if (Number.isFinite(days) && days > 0) {
+      filter.createdAt = { $gte: new Date(Date.now() - days * 24 * 60 * 60 * 1000) };
+    }
+    const scans = await Scan.find(filter).sort({ createdAt: -1 }).limit(50);
+    res.json(scans);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete("/api/scans/:id", authenticate, async (req, res) => {
+  try {
+    await Scan.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---------- Reviews Routes ----------
+// User-generated reviews sit in a moderation queue: new/edited reviews are
+// "pending" and only become publicly visible ("approved") once an admin clears them.
+
+// Public: approved reviews for a recipe + aggregate score.
+app.get("/api/reviews/recipe/:id", async (req, res) => {
+  if (!/^\d+$/.test(req.params.id)) return res.status(400).json({ error: "Invalid recipe id" });
+  try {
+    const recipeId = Number(req.params.id);
+    const reviews = await Review.find({ recipeId, status: "approved" })
+      .populate("userId", "name")
+      .sort({ createdAt: -1 })
+      .limit(100);
+    const count = reviews.length;
+    const avg = count ? reviews.reduce((s, rv) => s + rv.rating, 0) / count : 0;
+    res.json({ reviews, count, avg: Math.round(avg * 10) / 10 });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Authenticated: the caller's own review for a recipe (any status), so the UI
+// can prefill the form and show a "pending" badge.
+app.get("/api/reviews/mine/:id", authenticate, async (req, res) => {
+  if (!/^\d+$/.test(req.params.id)) return res.status(400).json({ error: "Invalid recipe id" });
+  try {
+    const review = await Review.findOne({ recipeId: Number(req.params.id), userId: req.user.id });
+    res.json(review || null);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/reviews", authenticate, async (req, res) => {
+  const b = req.body || {};
+  const recipeId = Number(b.recipeId);
+  if (!Number.isFinite(recipeId)) return res.status(400).json({ error: "Invalid recipeId" });
+  const rating = Number(b.rating);
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5)
+    return res.status(400).json({ error: "Rating must be 1-5" });
+  const comment = typeof b.comment === "string" ? b.comment.trim().slice(0, 1000) : "";
+  const recipeTitle = typeof b.recipeTitle === "string" ? b.recipeTitle.slice(0, 300) : "";
+
+  try {
+    const existing = await Review.findOne({ recipeId, userId: req.user.id });
+    if (existing) {
+      existing.rating = rating;
+      existing.comment = comment;
+      existing.recipeTitle = recipeTitle || existing.recipeTitle;
+      existing.status = "pending"; // re-edits go back through moderation
+      await existing.save();
+      return res.json(existing);
+    }
+    const doc = await new Review({ userId: req.user.id, recipeId, recipeTitle, rating, comment }).save();
+    res.status(201).json(doc);
+  } catch (err) {
+    if (err.code === 11000) return res.status(409).json({ error: "You already reviewed this recipe" });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete("/api/reviews/:id", authenticate, async (req, res) => {
+  try {
+    await Review.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ---------- Cook Mode Route ----------
 
 app.get("/api/recipes/:id/steps", async (req, res) => {
@@ -558,12 +702,14 @@ app.get("/api/recipes/:id/ingredients", async (req, res) => {
 // Overview stats for the admin dashboard
 app.get("/api/admin/stats", authenticate, requireAdmin, async (req, res) => {
   try {
-    const [userCount, favoriteCount, adminCount] = await Promise.all([
+    const [userCount, favoriteCount, adminCount, scanCount, pendingReviewCount] = await Promise.all([
       User.countDocuments(),
       Favorite.countDocuments(),
       User.countDocuments({ role: "admin" }),
+      Scan.countDocuments(),
+      Review.countDocuments({ status: "pending" }),
     ]);
-    res.json({ userCount, favoriteCount, adminCount });
+    res.json({ userCount, favoriteCount, adminCount, scanCount, pendingReviewCount });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -584,6 +730,46 @@ app.get("/api/admin/favorites", authenticate, requireAdmin, async (req, res) => 
   try {
     const favorites = await Favorite.find().populate("userId", "name email").sort({ createdAt: -1 });
     res.json(favorites);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Review moderation queue — defaults to pending, or pass ?status=approved|rejected|all
+app.get("/api/admin/reviews", authenticate, requireAdmin, async (req, res) => {
+  try {
+    const { status } = req.query;
+    const filter = ["pending", "approved", "rejected"].includes(status) ? { status } : {};
+    const reviews = await Review.find(filter)
+      .populate("userId", "name email")
+      .sort({ createdAt: -1 })
+      .limit(200);
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Approve or reject a review
+app.patch("/api/admin/reviews/:id", authenticate, requireAdmin, async (req, res) => {
+  const { status } = req.body || {};
+  if (!["pending", "approved", "rejected"].includes(status))
+    return res.status(400).json({ error: "status must be pending, approved or rejected" });
+  try {
+    const review = await Review.findByIdAndUpdate(req.params.id, { status }, { new: true })
+      .populate("userId", "name email");
+    if (!review) return res.status(404).json({ error: "Review not found" });
+    res.json(review);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Remove a review outright
+app.delete("/api/admin/reviews/:id", authenticate, requireAdmin, async (req, res) => {
+  try {
+    await Review.findByIdAndDelete(req.params.id);
+    res.json({ ok: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -612,10 +798,38 @@ app.delete("/api/admin/users/:id", authenticate, requireAdmin, async (req, res) 
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) return res.status(404).json({ error: "User not found" });
     await Favorite.deleteMany({ userId: req.params.id });
+    await Scan.deleteMany({ userId: req.params.id });
+    await Review.deleteMany({ userId: req.params.id });
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.listen(PORT, () => console.log(`🚀 API running → http://localhost:${PORT}`));
+// ---------- Bootstrap ----------
+// Only connect + listen when run directly (`node server.js`). When required by
+// the test suite, the caller controls the connection and uses the exported app.
+async function start() {
+  if (!API_KEY)    { console.error("❌ Missing SPOONACULAR_KEY in .env"); process.exit(1); }
+  if (!MONGO_URI)  { console.error("❌ Missing MONGO_URI in .env");         process.exit(1); }
+  if (!GROQ_KEY)   { console.error("❌ Missing GROQ_KEY in .env");          process.exit(1); }
+  if (!JWT_SECRET) { console.error("❌ Missing JWT_SECRET in .env");        process.exit(1); }
+  if (!GEMINI_KEY) { console.error("❌ Missing GEMINI_KEY in .env");        process.exit(1); }
+
+  try {
+    await mongoose.connect(MONGO_URI);
+    console.log("✅ MongoDB connected");
+  } catch (err) {
+    console.error("MongoDB error:", err);
+    process.exit(1);
+  }
+  app.listen(PORT, () => console.log(`🚀 API running → http://localhost:${PORT}`));
+}
+
+if (require.main === module) start();
+
+module.exports = {
+  app,
+  mongoose,
+  models: { User, Favorite, Scan, Review },
+};

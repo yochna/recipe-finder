@@ -9,6 +9,18 @@ export default function ShoppingList() {
   const { user } = useAuth();
   const { items, removeRecipe, clearList } = useShoppingList();
   const [showModal, setShowModal] = useState(false);
+  const [system, setSystem] = useState(() =>
+    localStorage.getItem('unitSystem') === 'us' ? 'us' : 'metric'
+  );
+
+  const setUnitSystem = (s) => {
+    setSystem(s);
+    localStorage.setItem('unitSystem', s);
+  };
+
+  // Spoonacular's ingredientWidget returns both metric and us; fall back to
+  // metric when a given ingredient is missing the requested system.
+  const amountOf = (ing) => ing.amount?.[system] || ing.amount?.metric || {};
 
   // ── Not signed in ──
   if (!user) {
@@ -42,7 +54,7 @@ export default function ShoppingList() {
   const handleCopy = () => {
     const text = items.map(item => {
       const ings = (item.ingredients || [])
-        .map(i => `  - ${i.name} (${i.amount?.metric?.value} ${i.amount?.metric?.unit})`)
+        .map(i => { const a = amountOf(i); return `  - ${i.name} (${a.value} ${a.unit})`; })
         .join('\n');
       return `${item.title}:\n${ings}`;
     }).join('\n\n');
@@ -80,6 +92,18 @@ export default function ShoppingList() {
           <p className="shop__sub">{allIngredients.length} ingredients from {items.length} recipe{items.length > 1 ? 's' : ''}.</p>
         </div>
         <div className="shop__header-actions">
+          <div className="shop__units" role="group" aria-label="Unit system">
+            <button
+              className={`shop__unit-btn${system === 'metric' ? ' active' : ''}`}
+              onClick={() => setUnitSystem('metric')}
+              aria-pressed={system === 'metric'}
+            >Metric</button>
+            <button
+              className={`shop__unit-btn${system === 'us' ? ' active' : ''}`}
+              onClick={() => setUnitSystem('us')}
+              aria-pressed={system === 'us'}
+            >US</button>
+          </div>
           <button className="shop__btn shop__btn--outline" onClick={handleCopy}>
             <i className="fas fa-copy"/> Copy
           </button>
@@ -108,7 +132,7 @@ export default function ShoppingList() {
                     <input type="checkbox" className="shop__checkbox" />
                     <span className="shop__ingredient-name">{ing.name}</span>
                     <span className="shop__ingredient-amount">
-                      {ing.amount?.metric?.value} {ing.amount?.metric?.unit}
+                      {(() => { const a = amountOf(ing); return `${a.value ?? ''} ${a.unit ?? ''}`.trim(); })()}
                     </span>
                   </label>
                 </li>
