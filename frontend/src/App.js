@@ -11,6 +11,7 @@ import AiChef from './pages/AiChef';
 import FridgeScan from './pages/FridgeScan';
 import Favorites from './pages/Favorites';
 import CookMode from './pages/CookMode';
+import RecipeDetail from './pages/RecipeDetail';
 import ResetPassword from './pages/ResetPassword';
 import ShoppingList from './pages/ShoppingList';
 import AdminDashboard from './pages/AdminDashboard';
@@ -33,6 +34,7 @@ export default function App() {
                     <Route path="/search"         element={<Search />} />
                     <Route path="/ai-chef"        element={<AiChef />} />
                     <Route path="/fridge-scan"    element={<FridgeScan />} />
+                    <Route path="/recipe/:id"     element={<RecipeDetail />} />
                     <Route path="/favorites"      element={<Favorites />} />
                     <Route path="/shopping-list"  element={<ShoppingList />} />
                     <Route path="/admin"          element={<AdminRoute><AdminDashboard /></AdminRoute>} />

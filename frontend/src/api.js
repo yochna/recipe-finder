@@ -122,3 +122,12 @@ export async function getRecipesByIngredients(ingredients) {
   }
   return res.json();
 }
+
+export async function getRecipeDetails(id) {
+  const res = await fetch(`${BASE}/api/recipes/${id}/details`, { credentials: 'include' });
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error(e.error || `Error ${res.status}`);
+  }
+  return res.json();
+}

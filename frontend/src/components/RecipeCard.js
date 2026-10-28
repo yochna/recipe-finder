@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useFavorites } from '../context/FavoritesContext';
 import { useShoppingList } from '../context/ShoppingListContext';
 import { useAuth } from '../context/AuthContext';
@@ -36,6 +36,8 @@ export default function RecipeCard({ recipe, variant = 'grid', style, onLoginReq
 
   const onCook = () => navigate(`/cook/${recipe.id ?? recipe.recipeId}`);
 
+  const onOpen = () => navigate(`/recipe/${recipe.id ?? recipe.recipeId}`);
+
   const onShoppingList = async (e) => {
     e.preventDefault(); e.stopPropagation();
     if (inList || added) return;
@@ -47,7 +49,11 @@ export default function RecipeCard({ recipe, variant = 'grid', style, onLoginReq
   const cardBody = (
     <div className="rcard__body">
       {tag && <p className="rcard__tag eyebrow">{tag}</p>}
-      <h3 className={`rcard__title${variant === 'featured' ? ' rcard__title--lg' : ''}`}>
+      <h3
+        className={`rcard__title${variant === 'featured' ? ' rcard__title--lg' : ''}`}
+        onClick={onOpen}
+        style={{ cursor: 'pointer' }}
+      >
         {recipe.title}
       </h3>
       <div className="rcard__meta">
@@ -63,15 +69,13 @@ export default function RecipeCard({ recipe, variant = 'grid', style, onLoginReq
           </span>
         )}
       </div>
-      <a
-        href={recipe.sourceUrl || '#'}
-        target="_blank"
-        rel="noopener noreferrer"
+      <Link
+        to={`/recipe/${recipe.id ?? recipe.recipeId}`}
         className="rcard__link"
-        aria-label={`View full recipe for ${recipe.title} on external site`}
+        aria-label={`View full recipe for ${recipe.title}`}
       >
         View recipe <i className="fas fa-arrow-right" aria-hidden="true"/>
-      </a>
+      </Link>
       <div className="rcard__actions">
         <button
           className="rcard__cook-btn"
@@ -106,7 +110,7 @@ export default function RecipeCard({ recipe, variant = 'grid', style, onLoginReq
       className={`rcard${variant === 'featured' ? ' rcard--featured' : ''}`}
       style={style}
     >
-      <figure className="rcard__img-wrap">
+      <figure className="rcard__img-wrap" onClick={onOpen} style={{ cursor: 'pointer' }}>
         <img
           src={imgErr ? FALLBACK : proxyImage(recipe.image)}
           alt={`Finished dish of ${recipe.title}`}

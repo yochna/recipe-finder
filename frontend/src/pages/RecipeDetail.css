@@ -1,0 +1,213 @@
+/* ── Recipe Detail — editorial full-page view ── */
+
+.rd {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 5rem;
+  animation: fadeUp .45s ease both;
+}
+
+.rd__back {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  color: var(--muted);
+  font-size: .9rem;
+  margin-bottom: 1.5rem;
+  transition: color .15s ease;
+}
+.rd__back:hover { color: var(--rust); }
+
+/* hero */
+.rd__hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+  margin-bottom: 2.75rem;
+}
+.rd__media { margin: 0; }
+.rd__media img {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+.rd__intro .eyebrow { margin-bottom: .5rem; }
+.rd__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--ink);
+  margin: 0 0 .9rem;
+}
+.rd__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  color: var(--ink-soft);
+  font-size: .92rem;
+  margin-bottom: .9rem;
+}
+.rd__meta i { color: var(--rust); margin-right: .35rem; }
+.rd__diets { display: flex; flex-wrap: wrap; gap: .45rem; margin-bottom: 1rem; }
+.rd__diet {
+  font-size: .76rem;
+  text-transform: capitalize;
+  background: var(--cream2);
+  border: 1px solid var(--border2);
+  border-radius: 999px;
+  padding: .2rem .65rem;
+  color: var(--ink-soft);
+}
+.rd__summary { color: var(--muted); font-size: .98rem; line-height: 1.7; margin-bottom: 1.4rem; }
+
+/* buttons */
+.rd__cta { display: flex; flex-wrap: wrap; gap: .6rem; }
+.rd__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .65rem 1.15rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 500;
+  font-size: .9rem;
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.rd__btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.rd__btn:disabled { opacity: .55; cursor: not-allowed; }
+.rd__btn--solid { background: var(--rust); color: #fff; border-color: var(--rust); }
+.rd__btn--solid:hover { background: var(--rust-dark); }
+.rd__btn--fav { background: var(--rust-pale); border-color: rgba(192,80,58,.3); color: var(--rust-dark); }
+.rd__btn--ghost { background: transparent; }
+.rd__btn.added { color: var(--rust-dark); background: var(--rust-pale); border-color: rgba(192,80,58,.3); }
+
+/* panels */
+.rd__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.75rem;
+  margin-bottom: 1.75rem;
+}
+.rd__panel {
+  background: var(--parchment);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-lg);
+  padding: 1.6rem 1.75rem;
+}
+.rd__panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+}
+.rd__panel-head h2 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--ink);
+}
+.rd__panel-head h2 i { color: var(--rust); margin-right: .5rem; font-size: 1.05rem; }
+.rd__per { font-size: .8rem; color: var(--dim); }
+
+/* servings scaler */
+.rd__servings {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: .15rem .3rem;
+  background: var(--cream);
+}
+.rd__servings button {
+  width: 1.55rem;
+  height: 1.55rem;
+  border-radius: 50%;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--rust-dark);
+  transition: background .15s ease;
+}
+.rd__servings button:hover { background: var(--rust-pale); }
+.rd__servings span { font-size: .85rem; min-width: 5.2rem; text-align: center; color: var(--ink-soft); }
+
+/* ingredients */
+.rd__ings { list-style: none; display: flex; flex-direction: column; gap: .55rem; }
+.rd__ing { display: grid; grid-template-columns: 5.2rem 1fr; gap: .6rem; font-size: .93rem; line-height: 1.5; }
+.rd__ing-amt { color: var(--rust-dark); font-weight: 600; text-align: right; white-space: nowrap; }
+.rd__ing-name { color: var(--ink-soft); }
+.rd__ing-meta { color: var(--dim); font-size: .84rem; }
+
+/* nutrition */
+.rd__nutrition { display: flex; flex-direction: column; gap: .85rem; }
+.rd__nut-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: .86rem;
+  color: var(--ink-soft);
+  margin-bottom: .3rem;
+}
+.rd__nut-amt { font-weight: 600; color: var(--ink); }
+.rd__bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--cream3);
+  overflow: hidden;
+}
+.rd__bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--rust-light), var(--rust));
+  transition: width .4s ease;
+}
+
+/* steps */
+.rd__steps { margin-bottom: 0; }
+.rd__steps-list { list-style: none; display: flex; flex-direction: column; gap: 1.15rem; counter-reset: step; }
+.rd__steps-list li { display: grid; grid-template-columns: 2.1rem 1fr; gap: .9rem; }
+.rd__step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  background: var(--rust);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: .95rem;
+}
+.rd__steps-list p { margin: 0; line-height: 1.7; color: var(--ink-soft); font-size: .95rem; }
+.rd__step-ings { margin-top: .3rem !important; color: var(--dim) !important; font-size: .84rem !important; font-style: italic; }
+
+/* states */
+.rd__error { text-align: center; padding: 4rem 1rem; }
+.rd__error .eyebrow { justify-content: center; }
+.rd__error h1 { font-family: var(--font-display); font-size: 2rem; margin: .5rem 0 .75rem; }
+.rd__error-msg { color: var(--muted); margin-bottom: 1.5rem; }
+.rd__error-actions { display: flex; gap: .75rem; justify-content: center; }
+
+.rd__skeleton { display: flex; flex-direction: column; gap: 1rem; }
+.rd__sk {
+  border-radius: var(--radius-lg);
+  background: linear-gradient(90deg, var(--cream2) 25%, var(--surface) 50%, var(--cream2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite linear;
+}
+.rd__sk--hero { height: 320px; }
+.rd__sk--line { height: 18px; border-radius: 9px; }
+.rd__sk--block { height: 220px; }
+
+@media (max-width: 860px) {
+  .rd__hero { grid-template-columns: 1fr; gap: 1.5rem; }
+  .rd__grid { grid-template-columns: 1fr; }
+}

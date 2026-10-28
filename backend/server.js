@@ -429,6 +429,24 @@ app.get("/api/recipes/:id/steps", async (req, res) => {
   }
 });
 
+// ---------- Recipe Detail Route ----------
+// One Spoonacular call returns everything the detail page needs:
+// extendedIngredients, nutrition, summary and analyzedInstructions.
+app.get("/api/recipes/:id/details", async (req, res) => {
+  const { id } = req.params;
+  if (!/^\d+$/.test(id)) return res.status(400).json({ error: "Invalid recipe id" });
+  try {
+    const url = new URL(`https://api.spoonacular.com/recipes/${id}/information`);
+    url.searchParams.append("includeNutrition", "true");
+    url.searchParams.append("apiKey", API_KEY);
+    const response = await fetch(url.toString());
+    if (!response.ok) return res.status(response.status).json({ error: `Spoonacular error ${response.status}` });
+    res.json(await response.json());
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ---------- Favorites Routes ----------
 
 app.get("/api/favorites", authenticate, async (req, res) => {

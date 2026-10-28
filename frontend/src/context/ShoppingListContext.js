@@ -3,6 +3,8 @@ import { useAuth } from './AuthContext';
 
 const Ctx = createContext(null);
 
+const BASE = process.env.REACT_APP_API_URL || 'https://saffron-stove-backend.onrender.com';
+
 export function ShoppingListProvider({ children }) {
   const { user } = useAuth();
 
@@ -31,7 +33,7 @@ export function ShoppingListProvider({ children }) {
     const id = recipe.id ?? recipe.recipeId;
     if (items.find(i => i.recipeId === id)) return;
     try {
-      const res = await fetch(`/api/recipes/${id}/ingredients`, { credentials: 'include' });
+      const res = await fetch(`${BASE}/api/recipes/${id}/ingredients`, { credentials: 'include' });
       const ingredients = await res.json();
       setItems(prev => [...prev, {
         recipeId: id,
