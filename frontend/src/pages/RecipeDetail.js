@@ -151,7 +151,7 @@ export default function RecipeDetail() {
       <div className="rd__grid">
         <section className="rd__panel" aria-label="Ingredients">
           <div className="rd__panel-head">
-            <h2><i className="fas fa-basket-egg" aria-hidden="true" /> Ingredients</h2>
+            <h2><i className="fas fa-basket-shopping" aria-hidden="true" /> Ingredients</h2>
             <div className="rd__servings" aria-label="Adjust servings">
               <button onClick={() => setServings(Math.max(1, shownServings - 1))} aria-label="Fewer servings">−</button>
               <span>{shownServings} {shownServings === 1 ? 'serving' : 'servings'}</span>

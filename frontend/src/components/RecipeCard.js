@@ -83,7 +83,7 @@ export default function RecipeCard({ recipe, variant = 'grid', style, onLoginReq
           onClick={onCook}
           aria-label={`Cook ${recipe.title} step by step`}
         >
-          <i className="fas fa-hat-chef" aria-hidden="true"/> Cook Mode
+          <i className="fas fa-utensils" aria-hidden="true"/> Cook Mode
         </button>
         <button
           className={`rcard__shop-btn${inList || added ? ' added' : ''}`}

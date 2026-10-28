@@ -61,7 +61,7 @@ export default function Navbar() {
               <i className="fas fa-search navbar__link-icon"/>Search
             </NavLink>
             <NavLink to="/ai-chef" className={({isActive}) => `navbar__link navbar__link--ai${isActive ? ' active' : ''}`}>
-              <i className="fas fa-hat-chef navbar__link-icon"/>AI Chef
+              <i className="fas fa-wand-magic-sparkles navbar__link-icon"/>AI Chef
             </NavLink>
             <NavLink to="/fridge-scan" className={({isActive}) => `navbar__link${isActive ? ' active' : ''}`}>
               <i className="fas fa-camera navbar__link-icon"/>Fridge Scan
