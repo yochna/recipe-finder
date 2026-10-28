@@ -37,8 +37,7 @@ export default function RecipeCard({ recipe, variant = 'grid', style, onLoginReq
   const onCook = () => navigate(`/cook/${recipe.id ?? recipe.recipeId}`);
 
   const onShoppingList = async (e) => {
-    e.preventDefault(); 
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     if (inList || added) return;
     await addRecipe(recipe);
     setAdded(true);

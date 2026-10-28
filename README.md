@@ -22,6 +22,8 @@ recipe-finder-nu-seven.vercel.app]
 | ♿ **Accessibility** | Semantic HTML5 (`<figure>`, `<figcaption>`, `<main>`, `<aside>`), ARIA attributes (`aria-label`, `aria-pressed`, `aria-hidden`) across all interactive components |
 | 🛡️ **Defensive Programming** | Handles empty results with contextual suggestions, API-down detection with retry UI, and CSS `text-overflow: ellipsis` to prevent layout breaking on long titles |
 | 🔒 **Auth Security** | JWT stored in `httpOnly` cookies (not `localStorage`), `sameSite` cookie policy, bcrypt password hashing, and session-aware shopping list that clears on logout |
+| 🧠 **Computer Vision** | Fridge Scan — photos are classified server-side by Gemini 2.5 Flash with a strict JSON output contract; results are user-correctable before recipe matching |
+| 🛡️ **Hardened Proxy** | Image proxy enforces an HTTPS host allowlist (no SSRF); password-reset tokens are SHA-256 hashed at rest; favorite writes use a field whitelist; AI endpoints carry dedicated per-minute rate limits |
 
 ---
 
@@ -29,6 +31,7 @@ recipe-finder-nu-seven.vercel.app]
 
 - 🔍 **Smart Recipe Search** — Debounced search by name, ingredient, cuisine, diet, or dish type via Spoonacular API
 - 🤖 **AI Chef (Chef Olive)** — Conversational AI sous-chef powered by Groq (LLaMA 3.3 70B) for personalized recipe suggestions
+- 📸 **Fridge Scan** — Point your camera at your ingredients; Gemini vision detects them, you correct the list as editable chips, and Spoonacular's ingredient-matching API returns the dishes you can actually cook right now — with missing items flagged
 - 👨‍🍳 **Cook Mode** — Distraction-free, full-screen step-by-step cooking view with built-in countdown timers per step
 - ❤️ **Favorites** — Per-user recipe bookmarking stored in MongoDB, gated behind authentication
 - 🛒 **Shopping List** — Add recipes, check off ingredients, copy to clipboard or print/export as PDF
@@ -63,6 +66,7 @@ recipe-finder-nu-seven.vercel.app]
 | Nodemailer + Gmail SMTP | Transactional email |
 | Spoonacular API | Recipe data (proxied) |
 | Groq API (LLaMA 3.3 70B) | AI chat completions |
+| Google Gemini 2.5 Flash | Ingredient recognition from camera photos (Fridge Scan) |
 
 ---
 
@@ -96,6 +100,7 @@ recipe-finder/
 - MongoDB Atlas account
 - Spoonacular API key
 - Groq API key
+- Google AI Studio (Gemini) API key
 - Gmail account with App Password
 
 ### Backend Setup
@@ -113,6 +118,7 @@ MONGO_URI=your_mongodb_atlas_uri
 SPOONACULAR_KEY=your_spoonacular_api_key
 GROQ_KEY=your_groq_api_key
 JWT_SECRET=your_jwt_secret_string
+GEMINI_KEY=your_gemini_api_key
 GMAIL_USER=your_gmail@gmail.com
 GMAIL_PASS=your_16char_app_password
 NODE_ENV=development
@@ -142,7 +148,8 @@ npm start
 | `MONGO_URI` | MongoDB Atlas connection string |
 | `SPOONACULAR_KEY` | [Spoonacular API](https://spoonacular.com/food-api) key |
 | `GROQ_KEY` | [Groq API](https://groq.com) key |
-| `JWT_SECRET` | Any random secret string (min 32 chars recommended) |
+| `GEMINI_KEY` | [Google AI Studio](https://aistudio.google.com) key — powers Fridge Scan vision (free tier) |
+| `JWT_SECRET` | Any random secret string (min 32 chars recommended) — server refuses to boot without it |
 | `GMAIL_USER` | Gmail address for sending reset emails |
 | `GMAIL_PASS` | Gmail App Password (16 characters, no spaces) |
 | `NODE_ENV` | `development` locally · `production` on server |

@@ -11,30 +11,36 @@ const rateLimit = require('express-rate-limit');
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const { URL } = require("url");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const API_KEY = process.env.SPOONACULAR_KEY;
 const MONGO_URI = process.env.MONGO_URI;
 const GROQ_KEY = process.env.GROQ_KEY;
-const JWT_SECRET = process.env.JWT_SECRET || "saffron-stove-secret-key";
+const JWT_SECRET = process.env.JWT_SECRET;
+const GEMINI_KEY = process.env.GEMINI_KEY;
 const GMAIL_USER = process.env.GMAIL_USER;
 const GMAIL_PASS = process.env.GMAIL_PASS;
 
-if (!API_KEY)   { console.error("❌ Missing SPOONACULAR_KEY in .env"); process.exit(1); }
-if (!MONGO_URI) { console.error("❌ Missing MONGO_URI in .env");         process.exit(1); }
-if (!GROQ_KEY)  { console.error("❌ Missing GROQ_KEY in .env");          process.exit(1); }
+if (!API_KEY)    { console.error("❌ Missing SPOONACULAR_KEY in .env"); process.exit(1); }
+if (!MONGO_URI)  { console.error("❌ Missing MONGO_URI in .env");         process.exit(1); }
+if (!GROQ_KEY)   { console.error("❌ Missing GROQ_KEY in .env");          process.exit(1); }
+if (!JWT_SECRET) { console.error("❌ Missing JWT_SECRET in .env");        process.exit(1); }
+if (!GEMINI_KEY) { console.error("❌ Missing GEMINI_KEY in .env");        process.exit(1); }
+
+const genAI = new GoogleGenerativeAI(GEMINI_KEY);
 
 // ---------- Dynamic CORS Configuration ----------
 const allowedOrigins = [
-  'https://recipe-finder-nu-seven.vercel.app', 
-    'http://localhost:3000',                     
-  'http://localhost:5173'                   
+  'https://recipe-finder-nu-seven.vercel.app', // Your production Vercel frontend
+  'http://localhost:3000',                     // React local development port
+  'http://localhost:5173'                      // Vite local development port
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-   
+    // Allow server-to-server or tools like Postman (no origin header)
     if (!origin) return callback(null, true);
     
     // Check if the origin matches our allowed list, or matches a local address during development
@@ -44,12 +50,14 @@ app.use(cors({
       callback(new Error("Blocked by CORS policy"));
     }
   },
-  credentials: true, 
+  credentials: true, // Crucial for passing cookies securely
   methods: ["GET", "POST", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
 app.options('*', cors());
+// Camera scans arrive as base64 images — allow a larger body only on that route.
+app.use('/api/scan', express.json({ limit: '8mb' }));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -79,9 +87,20 @@ const searchLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// AI calls cost real quota — keep them well under the general limit
+const aiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 8,
+  message: { error: 'You are using the kitchen too fast — try again in a minute.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 app.use('/api/', generalLimiter);           // applies to all routes
 app.use('/api/auth/', authLimiter);         // stricter on login/register
 app.use('/api/recipes', searchLimiter);     // strictest on Spoonacular calls
+app.use('/api/chat', aiLimiter);            // Groq quota protection
+app.use('/api/scan', aiLimiter);            // Gemini quota protection
 
 mongoose.connect(MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
@@ -100,7 +119,7 @@ const userSchema = new mongoose.Schema({
   name:              { type: String, required: true, trim: true },
   email:             { type: String, required: true, unique: true, lowercase: true, trim: true },
   password:          { type: String, required: true },
-  isAdmin:           { type: Boolean, default: false },
+  role:              { type: String, enum: ["user", "admin"], default: "user" },
   resetToken:        String,
   resetTokenExpiry:  Date,
 }, { timestamps: true });
@@ -127,9 +146,10 @@ const Favorite = mongoose.model("Favorite", favoriteSchema);
 // ---------- Cookie helper ----------
 const cookieOptions = {
   httpOnly: true,
+  // ✅ FIX: sameSite is 'none' only in production with secure: true
   sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   secure: process.env.NODE_ENV === 'production', 
-  maxAge: 7 * 24 * 60 * 60 * 1000, 
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
 // ---------- Auth Middleware ----------
@@ -145,16 +165,19 @@ const authenticate = (req, res, next) => {
   }
 };
 
-// Must be used after `authenticate`. Blocks non-admin users from admin-only routes.
-const adminOnly = (req, res, next) => {
-  if (!req.user?.isAdmin) return res.status(403).json({ error: "Admin access required" });
+// ---------- Admin Middleware ----------
+// Must run AFTER `authenticate`. Blocks anyone whose token role isn't "admin".
+const requireAdmin = (req, res, next) => {
+  if (!req.user || req.user.role !== "admin") {
+    return res.status(403).json({ error: "Admin access only" });
+  }
   next();
 };
 
 // ---------- Auth Routes ----------
 
 app.post("/api/auth/register", async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password } = req.body;
   if (!name || !email || !password)
     return res.status(400).json({ error: "Name, email and password are required" });
   if (password.length < 6)
@@ -163,15 +186,10 @@ app.post("/api/auth/register", async (req, res) => {
     const exists = await User.findOne({ email });
     if (exists) return res.status(409).json({ error: "Email already registered" });
     const hashed = await bcrypt.hash(password, 10);
-    const isAdmin = role === 'admin';
-    const user = await new User({ name, email, password: hashed, isAdmin }).save();
-    const token = jwt.sign(
-      { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin },
-      JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    const user = await new User({ name, email, password: hashed }).save();
+    const token = jwt.sign({ id: user._id, name: user.name, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
     res.cookie('token', token, cookieOptions);
-    res.status(201).json({ user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin } });
+    res.status(201).json({ user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -186,13 +204,9 @@ app.post("/api/auth/login", async (req, res) => {
     if (!user) return res.status(401).json({ error: "Invalid email or password" });
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(401).json({ error: "Invalid email or password" });
-    const token = jwt.sign(
-      { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin },
-      JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    const token = jwt.sign({ id: user._id, name: user.name, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
     res.cookie('token', token, cookieOptions);
-    res.json({ user: { id: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin } });
+    res.json({ user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -203,14 +217,10 @@ app.get("/api/auth/me", authenticate, (req, res) => {
 });
 
 app.post("/api/auth/logout", (req, res) => {
-  res.clearCookie('token', {
-    httpOnly: true,
-    sameSite: cookieOptions.sameSite,
-    secure: cookieOptions.secure,
-    path: '/',
-  });
+  res.clearCookie('token', cookieOptions); // Added options here to match creation layout
   res.json({ success: true });
 });
+
 // ---------- Forgot Password ----------
 
 app.post("/api/auth/forgot-password", async (req, res) => {
@@ -221,7 +231,8 @@ app.post("/api/auth/forgot-password", async (req, res) => {
     if (!user) return res.json({ success: true });
 
     const token = crypto.randomBytes(32).toString("hex");
-    user.resetToken = token;
+    // Only the hash is stored — a DB leak can't be replayed as reset links.
+    user.resetToken = crypto.createHash("sha256").update(token).digest("hex");
     user.resetTokenExpiry = Date.now() + 1000 * 60 * 60; // 1 hour
     await user.save();
 
@@ -259,8 +270,9 @@ app.post("/api/auth/reset-password", async (req, res) => {
   if (password.length < 6)
     return res.status(400).json({ error: "Password must be at least 6 characters" });
   try {
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
     const user = await User.findOne({
-      resetToken: token,
+      resetToken: hashedToken,
       resetTokenExpiry: { $gt: Date.now() },
     });
     if (!user) return res.status(400).json({ error: "Invalid or expired reset link" });
@@ -278,13 +290,31 @@ app.post("/api/auth/reset-password", async (req, res) => {
 
 // ---------- Image Proxy ----------
 
+// Only images we actually serve may pass through — blocks SSRF probing of
+// internal/private networks via an attacker-supplied url param.
+const IMAGE_PROXY_ALLOWED_HOSTS = new Set([
+  "spoonacular.com",
+  "media-sp00.spoonacular.com",
+  "img.spoonacular.com",
+  "images.unsplash.com",
+]);
+
 app.get("/api/image-proxy", async (req, res) => {
   const { url } = req.query;
   if (!url) return res.status(400).json({ error: "Missing url" });
+  let target;
   try {
-    const response = await fetch(decodeURIComponent(url));
+    target = new URL(decodeURIComponent(url));
+  } catch {
+    return res.status(400).json({ error: "Invalid url" });
+  }
+  if (target.protocol !== "https:" || !IMAGE_PROXY_ALLOWED_HOSTS.has(target.hostname)) {
+    return res.status(403).json({ error: "Host not allowed" });
+  }
+  try {
+    const response = await fetch(target.toString());
     if (!response.ok) return res.status(response.status).end();
-    const contentType = response.headers.get("content-type");
+    const contentType = response.headers.get("content-type") || "image/jpeg";
     res.setHeader("Content-Type", contentType);
     response.body.pipe(res);
   } catch (err) {
@@ -308,6 +338,76 @@ app.get("/api/recipes", async (req, res) => {
     if (type)    url.searchParams.append("type", type);
     const response = await fetch(url.toString());
     if (!response.ok) return res.status(response.status).json({ error: `Spoonacular error ${response.status}` });
+    res.json(await response.json());
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---------- Fridge Scan Routes ----------
+
+// Photo → ingredient names, via Gemini vision. The prompt forces a strict
+// JSON contract so the client can render corrections as editable chips.
+const SCAN_PROMPT = `You are a grocery-photo analysis engine for a recipe app.
+Look at the image and identify every raw or packaged FOOD INGREDIENT a person could cook with.
+Rules:
+- Return ONLY a JSON object of the shape {"ingredients": ["tomato", "onion", ...]}
+- Use simple lowercase singular pantry names ("chicken breast", "basil leaves", "soy sauce"), no quantities or brand labels.
+- Ignore appliances, packaging graphics, and non-food items. If you see no identifiable ingredients, return {"ingredients": []}.
+- Order by how certain you are. Cap at 25 items.`;
+
+app.post("/api/scan", authenticate, async (req, res) => {
+  const { image } = req.body || {};
+  const m = typeof image === "string"
+    && /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)$/.exec(image);
+  if (!m) return res.status(400).json({ error: "image must be a base64 jpeg/png/webp data URL" });
+
+  try {
+    const model = genAI.getGenerativeModel({
+      model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
+      generationConfig: {
+        responseMimeType: "application/json",
+        temperature: 0.2,
+        maxOutputTokens: 512,
+      },
+    });
+    const result = await model.generateContent([
+      { text: SCAN_PROMPT },
+      { inlineData: { mimeType: `image/${m[1]}`, data: m[2] } },
+    ]);
+    const parsed = JSON.parse(result.response.text());
+    const ingredients = [...new Set(
+      (Array.isArray(parsed.ingredients) ? parsed.ingredients : [])
+        .filter(x => typeof x === "string")
+        .map(x => x.trim().toLowerCase().slice(0, 60))
+        .filter(Boolean)
+    )].slice(0, 25);
+    res.json({ ingredients });
+  } catch (err) {
+    console.error("Gemini scan error:", err.message);
+    res.status(502).json({ error: "Could not read the photo — try again with better light." });
+  }
+});
+
+// Match a user-curated ingredient list against Spoonacular's finder.
+app.get("/api/recipes/by-ingredients", async (req, res) => {
+  const { ingredients } = req.query;
+  if (!ingredients) return res.status(400).json({ error: "Missing ingredients" });
+  const list = String(ingredients).split(",").map(s => s.trim()).filter(Boolean).slice(0, 20);
+  if (!list.length) return res.status(400).json({ error: "No ingredients provided" });
+  try {
+    const url = new URL("https://api.spoonacular.com/recipes/findByIngredients");
+    url.searchParams.append("ingredients", list.join(", "));
+    url.searchParams.append("apiKey", API_KEY);
+    url.searchParams.append("number", "10");
+    url.searchParams.append("ranking", "2");   // fewest missing ingredients first
+    url.searchParams.append("addRecipeInformation", "true");
+    const response = await fetch(url.toString());
+    if (!response.ok) {
+      // Empty matches come back as a 404 from Spoonacular — treat it as zero results.
+      if (response.status === 404) return res.json([]);
+      return res.status(response.status).json({ error: `Spoonacular error ${response.status}` });
+    }
     res.json(await response.json());
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -339,9 +439,25 @@ app.get("/api/favorites", authenticate, async (req, res) => {
   }
 });
 
+// Explicit whitelist — prevents field stuffing / schema injection from raw client bodies
+const pickFavoriteFields = (b) => ({
+  recipeId:       Number(b.recipeId ?? b.id),
+  title:          typeof b.title === "string" ? b.title.slice(0, 300) : undefined,
+  image:          typeof b.image === "string" ? b.image.slice(0, 500) : undefined,
+  readyInMinutes: b.readyInMinutes != null ? Number(b.readyInMinutes) || undefined : undefined,
+  servings:       b.servings != null ? Number(b.servings) || undefined : undefined,
+  sourceUrl:      typeof b.sourceUrl === "string" ? b.sourceUrl.slice(0, 500) : undefined,
+  vegetarian:     typeof b.vegetarian === "boolean" ? b.vegetarian : undefined,
+  vegan:          typeof b.vegan === "boolean" ? b.vegan : undefined,
+  glutenFree:     typeof b.glutenFree === "boolean" ? b.glutenFree : undefined,
+});
+
 app.post("/api/favorites", authenticate, async (req, res) => {
+  const fields = pickFavoriteFields(req.body || {});
+  if (!Number.isFinite(fields.recipeId))
+    return res.status(400).json({ error: "recipeId must be a number" });
   try {
-    const doc = await new Favorite({ ...req.body, userId: req.user.id }).save();
+    const doc = await new Favorite({ ...fields, userId: req.user.id }).save();
     res.status(201).json(doc);
   } catch (err) {
     if (err.code === 11000) return res.status(409).json({ error: "Already saved" });
@@ -405,50 +521,66 @@ app.get("/api/recipes/:id/ingredients", async (req, res) => {
 });
 
 // ---------- Admin Routes ----------
+// All routes below require a valid login token AND role: "admin" on that user's DB record.
 
-app.get("/api/admin/stats", authenticate, adminOnly, async (req, res) => {
+// Overview stats for the admin dashboard
+app.get("/api/admin/stats", authenticate, requireAdmin, async (req, res) => {
   try {
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const startOfToday = new Date(); startOfToday.setHours(0, 0, 0, 0);
-
-    const [totalUsers, totalAdmins, totalFavorites, newUsersLast7Days, newUsersToday] = await Promise.all([
+    const [userCount, favoriteCount, adminCount] = await Promise.all([
       User.countDocuments(),
-      User.countDocuments({ isAdmin: true }),
       Favorite.countDocuments(),
-      User.countDocuments({ createdAt: { $gte: sevenDaysAgo } }),
-      User.countDocuments({ createdAt: { $gte: startOfToday } }),
+      User.countDocuments({ role: "admin" }),
     ]);
-
-    res.json({
-      totalUsers,
-      totalAdmins,
-      totalRegularUsers: totalUsers - totalAdmins,
-      totalFavorites,
-      newUsersLast7Days,
-      newUsersToday,
-    });
+    res.json({ userCount, favoriteCount, adminCount });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.get("/api/admin/users", authenticate, adminOnly, async (req, res) => {
+// Every registered user, straight from the real MongoDB users collection
+app.get("/api/admin/users", authenticate, requireAdmin, async (req, res) => {
   try {
-    const users = await User.find()
-      .select("name email isAdmin createdAt")
-      .sort({ createdAt: -1 });
+    const users = await User.find().select("-password -resetToken -resetTokenExpiry").sort({ createdAt: -1 });
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.get("/api/admin/favorites", authenticate, adminOnly, async (req, res) => {
+// Every saved favorite across every user, with the owning user attached
+app.get("/api/admin/favorites", authenticate, requireAdmin, async (req, res) => {
   try {
-    const favorites = await Favorite.find()
-      .populate("userId", "name email")
-      .sort({ createdAt: -1 });
+    const favorites = await Favorite.find().populate("userId", "name email").sort({ createdAt: -1 });
     res.json(favorites);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Promote/demote a user's role (e.g. hand out a second admin)
+app.patch("/api/admin/users/:id/role", authenticate, requireAdmin, async (req, res) => {
+  const { role } = req.body;
+  if (!["user", "admin"].includes(role))
+    return res.status(400).json({ error: "role must be 'user' or 'admin'" });
+  try {
+    const user = await User.findByIdAndUpdate(req.params.id, { role }, { new: true })
+      .select("-password -resetToken -resetTokenExpiry");
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete a user (and their favorites) from the real database
+app.delete("/api/admin/users/:id", authenticate, requireAdmin, async (req, res) => {
+  if (req.params.id === req.user.id)
+    return res.status(400).json({ error: "You can't delete your own admin account" });
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+    await Favorite.deleteMany({ userId: req.params.id });
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

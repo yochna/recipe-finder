@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-import { BACKEND_URL } from '../api';
 
 const Ctx = createContext(null);
 
@@ -8,6 +7,7 @@ export function ShoppingListProvider({ children }) {
   const { user } = useAuth();
 
   const [items, setItems] = useState(() => {
+    // Only load from localStorage if user is logged in
     try {
       return JSON.parse(localStorage.getItem('shoppingList') || '[]');
     } catch { return []; }
@@ -27,11 +27,11 @@ export function ShoppingListProvider({ children }) {
   }, [user]);
 
   const addRecipe = async (recipe) => {
-    if (!user) return; 
+    if (!user) return; // guard: don't allow adding if not signed in
     const id = recipe.id ?? recipe.recipeId;
     if (items.find(i => i.recipeId === id)) return;
     try {
-      const res = await fetch(`${BACKEND_URL}/api/recipes/${id}/ingredients`, { credentials: 'include' });
+      const res = await fetch(`/api/recipes/${id}/ingredients`, { credentials: 'include' });
       const ingredients = await res.json();
       setItems(prev => [...prev, {
         recipeId: id,

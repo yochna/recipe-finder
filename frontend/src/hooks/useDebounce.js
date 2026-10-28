@@ -5,7 +5,7 @@ export function useDebounce(value, delay = 500) {
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(timer); 
+    return () => clearTimeout(timer); // cleanup on every keystroke
   }, [value, delay]);
 
   return debouncedValue;
