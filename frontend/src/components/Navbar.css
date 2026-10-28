@@ -69,6 +69,97 @@
 /* Actions */
 .navbar__actions { display:flex; align-items:center; gap:10px; }
 
+/* Collapse wrapper — holds nav + actions; becomes the mobile dropdown panel */
+.navbar__collapse {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  gap: 20px;
+}
+
+/* Hamburger — hidden on desktop */
+.navbar__burger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+/* Signed-in user menu */
+.navbar__user { position: relative; }
+.navbar__user-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px 5px 5px;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.navbar__user-btn:hover { background: var(--surface); }
+.navbar__user-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--rust);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+.navbar__user-name { font-size: 13px; font-weight: 500; }
+.navbar__user-chevron { font-size: 10px; color: var(--muted); }
+.navbar__dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  z-index: 120;
+}
+.navbar__dropdown-email {
+  margin: 0 0 4px;
+  padding: 6px 8px;
+  font-size: 12px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  word-break: break-all;
+}
+.navbar__dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  font-size: 13px;
+  text-align: left;
+  color: var(--ink);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.navbar__dropdown-item:hover { background: var(--surface); }
+
 .navbar__btn {
   padding: 8px 18px;
   font-size: 12px;
@@ -94,7 +185,49 @@
 
 @media (max-width: 768px) {
   .navbar { padding: 0 16px; }
-  .navbar__link span:not(.navbar__fav-count) { display:none; }
-  .navbar__link { padding: 8px 10px; }
-  .navbar__btn--ghost { display:none; }
+
+  /* Show the hamburger, hide the brand-adjacent layout gap */
+  .navbar__burger { display: inline-flex; order: 3; }
+
+  /* Collapse the nav + actions into a dropdown panel under the header */
+  .navbar__collapse {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 10px 16px 18px;
+    background: var(--cream);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+  }
+  .navbar.open .navbar__collapse { display: flex; }
+
+  .navbar__nav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+  }
+  .navbar__link {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 12px 10px;
+    font-size: 14px;
+  }
+
+  .navbar__actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .navbar__btn { width: 100%; text-align: center; }
+  .navbar__user { width: 100%; }
+  .navbar__user-btn { width: 100%; justify-content: flex-start; }
+  .navbar__dropdown { position: static; width: 100%; box-shadow: none; margin-top: 8px; }
 }
