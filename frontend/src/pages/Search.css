@@ -1,4 +1,6 @@
 .search-page { min-height: calc(100vh - 68px); }
+.search-page__header { animation: fadeUp 0.5s var(--ease) both; }
+.search-page__layout { animation: fadeUp 0.5s 0.08s var(--ease) both; }
 
 .search-page__header {
   padding: 48px 48px 32px;

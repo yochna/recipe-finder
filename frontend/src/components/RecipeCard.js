@@ -18,6 +18,7 @@ export default function RecipeCard({ recipe, variant = 'grid', style, onLoginReq
   const { user } = useAuth();
   const navigate = useNavigate();
   const [imgErr, setImgErr] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const [pop, setPop] = useState(false);
   const [added, setAdded] = useState(false);
   const faved = isFavorite(recipe.id ?? recipe.recipeId);
@@ -110,14 +111,16 @@ export default function RecipeCard({ recipe, variant = 'grid', style, onLoginReq
       className={`rcard${variant === 'featured' ? ' rcard--featured' : ''}`}
       style={style}
     >
-      <figure className="rcard__img-wrap" onClick={onOpen} style={{ cursor: 'pointer' }}>
+      <figure className={`rcard__img-wrap${loaded ? ' loaded' : ''}`} onClick={onOpen} style={{ cursor: 'pointer' }}>
         <img
           src={imgErr ? FALLBACK : proxyImage(recipe.image)}
           alt={`Finished dish of ${recipe.title}`}
+          onLoad={() => setLoaded(true)}
           onError={(e) => {
             e.target.onerror = null;
             e.target.src = FALLBACK;
             setImgErr(true);
+            setLoaded(true);
           }}
           loading="lazy"
         />

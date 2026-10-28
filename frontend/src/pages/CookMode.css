@@ -1,3 +1,5 @@
+.cook__fullscreen { animation: fadeIn 0.4s var(--ease) both; }
+
 .cook__fullscreen {
   position: fixed;
   inset: 0;

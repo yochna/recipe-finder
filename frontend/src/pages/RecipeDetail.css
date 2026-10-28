@@ -1,5 +1,9 @@
 /* ── Recipe Detail — editorial full-page view ── */
 
+.rd__hero { animation: fadeUp 0.6s var(--ease) both; }
+.rd__grid { animation: fadeUp 0.6s 0.1s var(--ease) both; }
+.rd__steps { animation: fadeUp 0.6s 0.16s var(--ease) both; }
+
 .rd {
   max-width: 1080px;
   margin: 0 auto;

@@ -1,4 +1,4 @@
-.favs { min-height: calc(100vh - 68px); }
+.favs { min-height: calc(100vh - 68px); animation: fadeUp 0.55s var(--ease) both; }
 
 .favs__header {
   padding: 64px 48px 48px;

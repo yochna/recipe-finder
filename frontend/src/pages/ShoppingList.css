@@ -1,3 +1,5 @@
+.shop { animation: fadeUp 0.55s var(--ease) both; }
+
 .shop {
   max-width: 860px;
   margin: 0 auto;

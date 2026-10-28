@@ -31,6 +31,14 @@
   font-style: italic;
   font-weight: 400;
 }
+.home__hero-word {
+  display: inline-block;
+  margin-right: 0.24em;
+  opacity: 0;
+  transform: translateY(0.5em);
+  animation: wordUp 0.62s var(--ease) both;
+}
+@keyframes wordUp { to { opacity: 1; transform: none; } }
 
 .home__hero-sub {
   font-family: var(--font-display);
@@ -195,9 +203,12 @@
   cursor: pointer;
   background: none;
   border: none;
-  transition: transform 0.25s;
+  opacity: 0;
+  animation: catIn 0.55s var(--ease) both;
+  transition: transform 0.3s var(--ease);
 }
-.home__cat-card:hover { transform: translateY(-3px); }
+.home__cat-card:hover { transform: translateY(-4px); }
+@keyframes catIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
 .home__cat-img-wrap {
   width: 100%;

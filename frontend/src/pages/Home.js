@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import RecipeCard from '../components/RecipeCard';
+import Reveal from '../components/Reveal';
 import { searchRecipes } from '../api';
 import './Home.css';
 
@@ -52,8 +53,10 @@ export default function Home() {
         <div className="home__hero-left">
           <p className="eyebrow home__hero-eyebrow">Issue N° 01 · Winter Plate</p>
           <h1 className="home__hero-headline">
-            The recipe you<br/>
-            <em>almost</em> remembered
+            {['The','recipe','you'].map((w,i)=>(<span key={i} className="home__hero-word" style={{animationDelay:`${0.15+i*0.08}s`}}>{w}</span>))}
+            <br/>
+            <em className="home__hero-word" style={{animationDelay:'0.4s'}}>almost</em>
+            {['remembered'].map((w,i)=>(<span key={i} className="home__hero-word" style={{animationDelay:`${0.48+i*0.08}s`}}>{w}</span>))}
           </h1>
           <p className="home__hero-sub">— now found.</p>
           <p className="home__hero-desc">
@@ -93,7 +96,7 @@ export default function Home() {
       </div>
 
       {/* ── Browse by category ── */}
-      <section className="home__section">
+      <Reveal as="section" className="home__section">
         <div className="home__section-header">
           <div>
             <p className="eyebrow">Browse</p>
@@ -102,8 +105,8 @@ export default function Home() {
           <Link to="/search" className="home__see-all">See All</Link>
         </div>
         <div className="home__categories">
-          {CATEGORIES.map(cat => (
-            <button key={cat.name} className="home__cat-card" onClick={() => handleCategory(cat.name)}>
+          {CATEGORIES.map((cat, i) => (
+            <button key={cat.name} className="home__cat-card" style={{ animationDelay: `${i * 0.06}s` }} onClick={() => handleCategory(cat.name)}>
               <div className="home__cat-img-wrap">
                 <img src={cat.img} alt={cat.name} loading="lazy" />
               </div>
@@ -112,20 +115,20 @@ export default function Home() {
             </button>
           ))}
         </div>
-      </section>
+      </Reveal>
 
       {/* ── AI Chef banner ── */}
-      <section className="home__ai-banner">
+      <Reveal as="section" className="home__ai-banner">
         <div className="home__ai-banner-inner">
           <p className="eyebrow home__ai-eyebrow">AI Sous-Chef</p>
           <h2 className="home__ai-title">Open the fridge.<br/>We'll write the menu.</h2>
           <Link to="/ai-chef" className="home__ai-cta">Talk to Chef Olive</Link>
         </div>
         <p className="home__ai-quote">"Two eggs,<br/>some spinach,<br/>that's a meal."</p>
-      </section>
+      </Reveal>
 
       {/* ── Tonight's tasting menu ── */}
-      <section className="home__section">
+      <Reveal as="section" className="home__section">
         <div className="home__section-header">
           <div>
             <p className="eyebrow">From the Kitchen</p>
@@ -150,7 +153,7 @@ export default function Home() {
             ))}
           </div>
         )}
-      </section>
+      </Reveal>
 
     </main>
   );

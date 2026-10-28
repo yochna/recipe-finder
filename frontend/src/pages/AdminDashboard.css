@@ -1,3 +1,5 @@
+.admin { animation: fadeUp 0.55s var(--ease) both; }
+
 .admin {
   max-width: 1100px;
   margin: 0 auto;

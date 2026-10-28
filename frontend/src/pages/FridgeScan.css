@@ -1,5 +1,7 @@
 /* ── Fridge Scan — kitchen vision page ── */
 
+.fs { animation: fadeUp 0.55s var(--ease) both; }
+
 .fs {
   max-width: 1080px;
   margin: 0 auto;

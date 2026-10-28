@@ -1,3 +1,5 @@
+.footer { animation: fadeIn 0.6s var(--ease) both; }
+
 .footer {
   background: var(--cream);
   border-top: 1px solid var(--border);

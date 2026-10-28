@@ -1,4 +1,4 @@
-.ai-chef { min-height: calc(100vh - 68px); }
+.ai-chef { min-height: calc(100vh - 68px); animation: fadeUp 0.55s var(--ease) both; }
 
 .ai-chef__layout {
   display: grid;

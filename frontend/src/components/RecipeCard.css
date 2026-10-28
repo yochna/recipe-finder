@@ -22,16 +22,30 @@
   background: var(--surface);
   min-height: 200px;
 }
+/* shimmer placeholder until the photo loads */
+.rcard__img-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--surface) 25%, var(--cream2) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  transition: opacity 0.4s var(--ease);
+}
+.rcard__img-wrap.loaded::before { opacity: 0; }
 
 .rcard__img-wrap img {
+  position: relative;
   width: 100%;
   aspect-ratio: 4/3;
   object-fit: cover;
   display: block;
-  transition: transform 0.55s ease;
+  opacity: 0;
+  transform: scale(1.02);
+  transition: transform 0.55s var(--ease), opacity 0.5s var(--ease);
 }
-
-.rcard:hover .rcard__img-wrap img { transform: scale(1.04); }
+.rcard__img-wrap.loaded img { opacity: 1; transform: scale(1); }
+.rcard:hover .rcard__img-wrap.loaded img { transform: scale(1.04); }
 
 /* ── Featured variant ── */
 .rcard--featured .rcard__img-wrap img {
