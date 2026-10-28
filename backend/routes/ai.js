@@ -33,7 +33,7 @@ router.post("/chat", authenticate, async (req, res) => {
         "Authorization": `Bearer ${env.GROQ_KEY}`,
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
+        model: env.GROQ_MODEL,
         max_tokens: 1000,
         messages: [
           { role: "system", content: system || "" },

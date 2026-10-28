@@ -17,6 +17,7 @@ module.exports = {
   API_KEY:      str(process.env.SPOONACULAR_KEY),
   MONGO_URI:    str(process.env.MONGO_URI),
   GROQ_KEY:     str(process.env.GROQ_KEY),
+  GROQ_MODEL:   str(process.env.GROQ_MODEL) || "llama-3.1-8b-instant",
   JWT_SECRET:   str(process.env.JWT_SECRET),
   GEMINI_KEY:   str(process.env.GEMINI_KEY),
   GEMINI_MODEL: str(process.env.GEMINI_MODEL) || "gemini-2.5-flash",
